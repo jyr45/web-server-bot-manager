@@ -1,0 +1,72 @@
+{
+  "users": {
+    "5219621873930@c.us": {
+      "name": "JAIR OBED GIRON MORENO",
+      "phone": "9621873930",
+      "email": "obedgiron@gmail.com",
+      "lastUpdate": "2025-05-30T20:04:20.460Z"
+    },
+    "5219622407959@c.us": {
+      "name": "Jhosselin Hitzel Pérez Méndez",
+      "phone": "9622407959",
+      "email": "hitzelp4@gmail.com",
+      "lastUpdate": "2025-05-30T20:11:32.275Z"
+    }
+  },
+  "appointments": {
+    "1001": {
+      "id": 1001,
+      "userId": "5219621873930@c.us",
+      "date": "2025-07-18T06:00:00.000Z",
+      "time": "09:00",
+      "clientName": "JAIR OBED GIRON MORENO",
+      "clientPhone": "9621873930",
+      "clientEmail": "obedgiron@gmail.com",
+      "status": "confirmed",
+      "type": "general",
+      "created": "2025-05-30T20:04:20.459Z",
+      "updated": "2025-05-30T20:04:20.459Z"
+    },
+    "1002": {
+      "id": 1002,
+      "userId": "5219622407959@c.us",
+      "date": "2025-05-31T06:00:00.000Z",
+      "time": "14:00",
+      "clientName": "Jhosselin Hitzel Pérez Méndez",
+      "clientPhone": "9622407959",
+      "clientEmail": "hitzelp4@gmail.com",
+      "status": "confirmed",
+      "type": "general",
+      "created": "2025-05-30T20:11:32.274Z",
+      "updated": "2025-05-30T20:11:32.274Z"
+    }
+  },
+  "reservations": {},
+  "orders": {},
+  "carts": {},
+  "surveys": {},
+  "loyaltyPoints": {},
+  "complaints": {},
+  "courses": {},
+  "events": {},
+  "payments": {},
+  "promotions": {},
+  "branches": {},
+  "serviceOrders": {},
+  "feedback": {},
+  "templates": {},
+  "lastIds": {
+    "appointment": 1002,
+    "reservation": 2000,
+    "order": 3000,
+    "survey": 4000,
+    "complaint": 5000,
+    "event": 6000,
+    "serviceOrder": 7000
+  },
+  "metadata": {
+    "created": "2025-05-30T20:01:12.323Z",
+    "botId": "bot_1748333311392_2rx2d7bxx",
+    "version": "1.0.0"
+  }
+}

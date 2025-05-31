@@ -1,0 +1,77 @@
+{
+  "name": "whatsapp-bot-manager",
+  "version": "1.0.0",
+  "description": "Sistema de gestión integral de bots de WhatsApp para empresas",
+  "main": "server.js",
+  "scripts": {
+    "init-db": "node scripts/init-db.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "dev:debug": "nodemon --inspect server.js",
+    "test": "jest",
+    "setup": "node setup.js",
+    "backup": "node scripts/backup.js",
+    "restore": "node scripts/restore.js",
+    "clean": "node scripts/cleanup.js",
+    "deploy": "pm2 start ecosystem.config.js",
+    "stop": "pm2 stop all",
+    "restart": "pm2 restart all",
+    "logs": "pm2 logs",
+    "monitor": "pm2 monit"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "automation",
+    "business",
+    "chat",
+    "messaging",
+    "customer-service",
+    "ai",
+    "gemini"
+  ],
+  "author": "Tu Nombre <tu@email.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "archiver": "^5.3.1",
+    "axios": "^1.9.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^2.2.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^6.8.1",
+    "fs-extra": "^11.3.0",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.14.1",
+    "node-cron": "^3.0.2",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.28.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.44.0",
+    "jest": "^29.6.1",
+    "nodemon": "^3.0.1",
+    "pm2": "^5.3.0",
+    "prettier": "^3.0.0",
+    "supertest": "^6.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/whatsapp-bot-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tu-usuario/whatsapp-bot-manager/issues"
+  },
+  "homepage": "https://github.com/tu-usuario/whatsapp-bot-manager#readme"
+}

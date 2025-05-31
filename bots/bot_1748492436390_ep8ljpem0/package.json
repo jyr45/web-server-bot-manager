@@ -1,0 +1,28 @@
+{
+  "name": "whatsapp-bot-bot_1748492436390_ep8ljpem0",
+  "version": "1.0.0",
+  "description": "Bot de WhatsApp para ht",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.23.0",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.6.0",
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "fs-extra": "^11.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "automation",
+    "ht"
+  ],
+  "author": "Bot Generator",
+  "license": "MIT"
+}

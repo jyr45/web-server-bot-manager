@@ -1,0 +1,66 @@
+{
+  "botId": "bot_1748462899944_sn83s1vg7",
+  "name": "asas",
+  "company": "asas",
+  "plan": "profesional",
+  "flows": [
+    {
+      "name": "MENU_PRINCIPAL",
+      "description": "Menú principal del bot",
+      "steps": [
+        "INITIAL",
+        "AWAITING_CHOICE"
+      ],
+      "options": [
+        {
+          "number": 1,
+          "text": "Información y Servicios",
+          "action": "info"
+        },
+        {
+          "number": 2,
+          "text": "Consultar Estado",
+          "action": "status"
+        },
+        {
+          "number": 3,
+          "text": "Hablar con Asesor",
+          "action": "human"
+        },
+        {
+          "number": 4,
+          "text": "Acerca de Nosotros",
+          "action": "about"
+        },
+        {
+          "number": 5,
+          "text": "Salir",
+          "action": "exit"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "greetings": {
+      "morning": "¡Buenos días! 🌅 ¿Cómo puedo ayudarte hoy?",
+      "afternoon": "¡Buenas tardes! 🌞 ¿En qué puedo asistirte?",
+      "evening": "¡Buenas noches! 🌙 ¿Cómo puedo ayudarte?",
+      "newUser": "¡Hola! Veo que es tu primera vez aquí. Te explico brevemente cómo funciono..."
+    },
+    "errors": {
+      "invalidOption": "❌ Opción no válida. Por favor, selecciona una opción del menú.",
+      "apiError": "😔 Ups, algo salió mal. Por favor, intenta de nuevo en unos momentos.",
+      "outsideHours": "🕐 Estamos fuera de horario de atención.",
+      "userPaused": "⏸️ El asistente está pausado. Escribe \"reactivar\" para continuar."
+    },
+    "confirmations": {
+      "dataSaved": "✅ Información guardada correctamente.",
+      "processComplete": "🎉 ¡Proceso completado exitosamente!",
+      "waitingResponse": "⏳ Procesando tu solicitud, por favor espera...",
+      "goodbye": "👋 ¡Gracias por contactarnos! Que tengas un excelente día."
+    }
+  },
+  "apis": {},
+  "aiConfig": {},
+  "lastUpdated": "2025-05-28T20:08:19.974Z"
+}

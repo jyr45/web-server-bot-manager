@@ -1,0 +1,1179 @@
+{
+  "botId": "bot_1748333311392_2rx2d7bxx",
+  "name": "bot",
+  "company": "bot",
+  "plan": "emprendedor",
+  "flows": [
+    {
+      "name": "MENU_PRINCIPAL",
+      "description": "Menú principal para el bot",
+      "steps": [
+        "INITIAL",
+        "AWAITING_CHOICE"
+      ],
+      "options": [
+        {
+          "number": 1,
+          "emoji": "1️⃣",
+          "text": "Servicios",
+          "action": "goToFlow",
+          "actionValue": "MENU_SERVICIOS",
+          "step": "INITIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "2️⃣",
+          "text": "Consultar Estado",
+          "action": "goToFlow",
+          "actionValue": "CONSULTA_ESTADO",
+          "step": "INITIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "3️⃣",
+          "text": "Hablar con Asesor",
+          "action": "sendMessage",
+          "actionValue": "CONTACTAR_ASESOR",
+          "step": "INITIAL"
+        },
+        {
+          "number": 4,
+          "emoji": "4️⃣",
+          "text": "Acerca de Nosotros",
+          "action": "sendMessage",
+          "actionValue": "ACERCA_DE",
+          "step": "INITIAL"
+        },
+        {
+          "number": 5,
+          "emoji": "5️⃣",
+          "text": "Programa de lealtad",
+          "action": "goToFlow",
+          "actionValue": "PROGRAMA_LEALTAD",
+          "step": "INITIAL"
+        },
+        {
+          "number": 6,
+          "emoji": "6️⃣",
+          "text": "EDUCATIVO",
+          "action": "goToFlow",
+          "actionValue": "CHATBOT_EDUCATIVO",
+          "step": "INITIAL"
+        },
+        {
+          "number": 7,
+          "emoji": "7️⃣",
+          "text": "FOTO",
+          "action": "sendMedia",
+          "actionValue": "https://servjogm.com/assets/js/bot_whatsapp/folleto/folleto_6.jpg",
+          "step": "INITIAL"
+        },
+        {
+          "number": 8,
+          "emoji": "8️⃣",
+          "text": "CITAS",
+          "action": "goToFlow",
+          "actionValue": "PROCESO_RESERVACION",
+          "step": "INITIAL"
+        },
+        {
+          "number": 9,
+          "emoji": "9️⃣",
+          "text": "TUTORIAL ONBOARDING",
+          "action": "goToFlow",
+          "actionValue": "TUTORIAL_ONBOARDING",
+          "step": "INITIAL"
+        },
+        {
+          "number": 10,
+          "emoji": "1️⃣",
+          "text": "VIDEO",
+          "action": "sendMedia",
+          "actionValue": "https://file-examples.com/storage/fe32c8d6966839f839df247/2017/04/file_example_MP4_480_1_5MG.mp4",
+          "step": "INITIAL"
+        }
+      ],
+      "messages": {
+        "welcome": "¡Hola! 👋 Bienvenido al asistente virtual. ¿En qué puedo ayudarte hoy?",
+        "CONTACTAR_ASESOR": "En breve un asesor se comunicará contigo. Por favor, describe tu consulta.",
+        "ACERCA_DE": "Somos una empresa dedicada a brindar soluciones eficientes para tu negocio.",
+        "foto": "Nuevo mensaje"
+      },
+      "active": true,
+      "conditions": [],
+      "variables": {},
+      "validations": {},
+      "loops": [],
+      "timers": [],
+      "schedules": {
+        "enabled": false,
+        "workingHours": {
+          "monday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          },
+          "tuesday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          }
+        },
+        "timezone": "America/Mexico_City",
+        "outsideHoursMessage": "Estamos fuera de horario"
+      }
+    },
+    {
+      "name": "CONSULTA_ESTADO",
+      "description": "Consulta de estado de servicios o pedidos",
+      "steps": [
+        "INITIAL",
+        "ENTER_ID",
+        "SHOW_STATUS"
+      ],
+      "options": [
+        {
+          "number": 1,
+          "emoji": "🔍",
+          "text": "Consultar estado",
+          "action": "goToStep",
+          "actionValue": "ENTER_ID",
+          "step": "INITIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "📦",
+          "text": "Mis pedidos recientes",
+          "action": "sendMessage",
+          "actionValue": "PEDIDOS_RECIENTES",
+          "step": "INITIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "⬅️",
+          "text": "Regresar al Menú",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "INITIAL"
+        },
+        {
+          "number": 1,
+          "emoji": "🔄",
+          "text": "Nueva Consulta",
+          "action": "goToStep",
+          "actionValue": "ENTER_ID",
+          "step": "INITIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "📞",
+          "text": "Contactar Soporte",
+          "action": "sendMessage",
+          "actionValue": "CONTACTAR_SOPORTE",
+          "step": "INITIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "⬅️",
+          "text": "Regresar al Menú",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "INITIAL"
+        }
+      ],
+      "messages": {
+        "welcome": "🔍 *Consulta de Estado*\n\n¿Qué deseas hacer?",
+        "ENTER_ID": "Por favor, envía el número de folio o ID de tu servicio:",
+        "searching": "⏳ Buscando información del folio ${id}...",
+        "SHOW_STATUS": "📋 *Resultado de la consulta:*\n\nFolio: ${id}\nEstatus: ${status}\nÚltima actualización: ${date}",
+        "notFound": "❌ No se encontró información para el folio ${id}. Verifica que el número sea correcto.",
+        "CONTACTAR_SOPORTE": "Un agente de soporte se comunicará contigo en breve para ayudarte con tu consulta.",
+        "PEDIDOS_RECIENTES": "No se encontraron pedidos recientes asociados a tu cuenta."
+      },
+      "active": true,
+      "conditions": [],
+      "variables": {},
+      "validations": {},
+      "loops": [],
+      "timers": [],
+      "schedules": {
+        "enabled": false,
+        "workingHours": {
+          "monday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          },
+          "tuesday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          }
+        },
+        "timezone": "America/Mexico_City",
+        "outsideHoursMessage": "Estamos fuera de horario"
+      }
+    },
+    {
+      "name": "PROGRAMA_LEALTAD",
+      "description": "Gestión del programa de lealtad o puntos",
+      "steps": [
+        "INITIAL",
+        "CONSULTAR_PUNTOS",
+        "CANJEAR_PUNTOS",
+        "BENEFICIOS",
+        "HISTORIAL"
+      ],
+      "options": [
+        {
+          "number": 1,
+          "emoji": "🔍",
+          "text": "Consultar Puntos",
+          "action": "goToStep",
+          "actionValue": "CONSULTAR_PUNTOS",
+          "step": "INITIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "🎁",
+          "text": "Canjear Puntos",
+          "action": "goToStep",
+          "actionValue": "CANJEAR_PUNTOS",
+          "step": "INITIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "⭐",
+          "text": "Beneficios",
+          "action": "goToStep",
+          "actionValue": "BENEFICIOS",
+          "step": "INITIAL"
+        },
+        {
+          "number": 4,
+          "emoji": "📜",
+          "text": "Historial",
+          "action": "goToStep",
+          "actionValue": "HISTORIAL",
+          "step": "INITIAL"
+        },
+        {
+          "number": 5,
+          "emoji": "❓",
+          "text": "Preguntas Frecuentes",
+          "action": "sendMessage",
+          "actionValue": "FAQ_LEALTAD",
+          "step": "INITIAL"
+        },
+        {
+          "number": 6,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "INITIAL"
+        },
+        {
+          "number": 1,
+          "emoji": "🎁",
+          "text": "Canjear Puntos",
+          "action": "goToStep",
+          "actionValue": "CANJEAR_PUNTOS",
+          "step": "CONSULTAR_PUNTOS"
+        },
+        {
+          "number": 2,
+          "emoji": "⭐",
+          "text": "Ver Beneficios",
+          "action": "goToStep",
+          "actionValue": "BENEFICIOS",
+          "step": "CONSULTAR_PUNTOS"
+        },
+        {
+          "number": 3,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "CONSULTAR_PUNTOS"
+        },
+        {
+          "number": 1,
+          "emoji": "🎁",
+          "text": "Recompensa 1",
+          "action": "sendMessage",
+          "actionValue": "CANJEAR_RECOMPENSA_1",
+          "step": "CANJEAR_PUNTOS"
+        },
+        {
+          "number": 2,
+          "emoji": "🎁",
+          "text": "Recompensa 2",
+          "action": "sendMessage",
+          "actionValue": "CANJEAR_RECOMPENSA_2",
+          "step": "CANJEAR_PUNTOS"
+        },
+        {
+          "number": 3,
+          "emoji": "🎁",
+          "text": "Recompensa 3",
+          "action": "sendMessage",
+          "actionValue": "CANJEAR_RECOMPENSA_3",
+          "step": "CANJEAR_PUNTOS"
+        },
+        {
+          "number": 4,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToStep",
+          "actionValue": "INITIAL",
+          "step": "CANJEAR_PUNTOS"
+        },
+        {
+          "number": 1,
+          "emoji": "🔍",
+          "text": "Consultar mis puntos",
+          "action": "goToStep",
+          "actionValue": "CONSULTAR_PUNTOS",
+          "step": "BENEFICIOS"
+        },
+        {
+          "number": 2,
+          "emoji": "🎁",
+          "text": "Canjear puntos",
+          "action": "goToStep",
+          "actionValue": "CANJEAR_PUNTOS",
+          "step": "BENEFICIOS"
+        },
+        {
+          "number": 3,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToStep",
+          "actionValue": "INITIAL",
+          "step": "BENEFICIOS"
+        },
+        {
+          "number": 1,
+          "emoji": "🔍",
+          "text": "Filtrar por fecha",
+          "action": "sendMessage",
+          "actionValue": "FILTRAR_HISTORIAL",
+          "step": "HISTORIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "📊",
+          "text": "Estadísticas",
+          "action": "sendMessage",
+          "actionValue": "ESTADISTICAS_PUNTOS",
+          "step": "HISTORIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToStep",
+          "actionValue": "INITIAL",
+          "step": "HISTORIAL"
+        },
+        {
+          "number": 7,
+          "emoji": "1️⃣",
+          "text": "Menu",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "CONSULTAR_PUNTOS"
+        }
+      ],
+      "messages": {
+        "welcome": "🏆 *Programa de Lealtad*\n\n¡Bienvenido a tu portal de fidelización! ¿Qué deseas hacer hoy?",
+        "CONSULTAR_PUNTOS": "💯 *Tus Puntos Actuales*\n\nTienes ${puntos} puntos disponibles.\nNivel: ${nivel}\nPuntos para siguiente nivel: ${puntosProximoNivel}",
+        "CANJEAR_PUNTOS": "🎁 *Catálogo de Recompensas*\n\nPuntos disponibles: ${puntos}\n\n${recompensas}\n\nSelecciona una recompensa para canjear:",
+        "confirmacionCanje": "⚠️ ¿Estás seguro de canjear ${puntosRecompensa} puntos por \"${nombreRecompensa}\"?",
+        "canjeExitoso": "✅ *¡Canje Exitoso!*\n\nHas canjeado ${puntosRecompensa} puntos por \"${nombreRecompensa}\".\n\nPuntos restantes: ${puntosRestantes}\n\nHemos enviado los detalles a tu correo electrónico.",
+        "BENEFICIOS": "⭐ *Beneficios por Nivel*\n\n${beneficios}",
+        "HISTORIAL": "📜 *Historial de Puntos*\n\n${historial}",
+        "FAQ_LEALTAD": "❓ *Preguntas Frecuentes - Programa de Lealtad*\n\n1️⃣ ¿Cómo acumulo puntos?\nPor cada compra que realices acumulas 1 punto por cada $10 gastados.\n\n2️⃣ ¿Cuándo vencen mis puntos?\nLos puntos tienen una vigencia de 12 meses a partir de su obtención.\n\n3️⃣ ¿Cómo subo de nivel?\nAl acumular cierta cantidad de puntos en un periodo de 6 meses.",
+        "CANJEAR_RECOMPENSA_1": "⚠️ ¿Estás seguro de canjear 500 puntos por \"Descuento de $100\"?",
+        "CANJEAR_RECOMPENSA_2": "⚠️ ¿Estás seguro de canjear 1000 puntos por \"Producto gratis\"?",
+        "CANJEAR_RECOMPENSA_3": "⚠️ ¿Estás seguro de canjear 2000 puntos por \"Servicio premium\"?",
+        "FILTRAR_HISTORIAL": "Por favor, indica el rango de fechas que deseas consultar (DD/MM/AAAA - DD/MM/AAAA):",
+        "ESTADISTICAS_PUNTOS": "📊 *Estadísticas de tus Puntos*\n\nPuntos acumulados este año: ${puntosAnual}\nPromedio mensual: ${promedioMensual}\nMes con más puntos: ${mejorMes}\nPuntos canjeados: ${puntosCanjeados}"
+      },
+      "active": true,
+      "conditions": [],
+      "variables": {},
+      "validations": {},
+      "loops": [],
+      "timers": [],
+      "schedules": {
+        "enabled": false,
+        "workingHours": {
+          "monday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          },
+          "tuesday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          }
+        },
+        "timezone": "America/Mexico_City",
+        "outsideHoursMessage": "Estamos fuera de horario"
+      }
+    },
+    {
+      "name": "CHATBOT_EDUCATIVO",
+      "description": "Sistema de cursos y aprendizaje interactivo",
+      "steps": [
+        "INITIAL",
+        "CATEGORIAS_CURSOS",
+        "LISTAR_CURSOS",
+        "DETALLE_CURSO",
+        "LECCION",
+        "QUIZ"
+      ],
+      "options": [
+        {
+          "number": 1,
+          "emoji": "📚",
+          "text": "Explorar Cursos",
+          "action": "goToStep",
+          "actionValue": "CATEGORIAS_CURSOS",
+          "step": "INITIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "🎓",
+          "text": "Mis Cursos",
+          "action": "sendMessage",
+          "actionValue": "MIS_CURSOS",
+          "step": "INITIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "🔍",
+          "text": "Buscar Curso",
+          "action": "sendMessage",
+          "actionValue": "BUSCAR_CURSO",
+          "step": "INITIAL"
+        },
+        {
+          "number": 4,
+          "emoji": "📊",
+          "text": "Mi Progreso",
+          "action": "sendMessage",
+          "actionValue": "MI_PROGRESO",
+          "step": "INITIAL"
+        },
+        {
+          "number": 5,
+          "emoji": "📝",
+          "text": "Certificaciones",
+          "action": "sendMessage",
+          "actionValue": "CERTIFICACIONES",
+          "step": "INITIAL"
+        },
+        {
+          "number": 6,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "INITIAL"
+        },
+        {
+          "number": 1,
+          "emoji": "💻",
+          "text": "Tecnología",
+          "action": "goToStep",
+          "actionValue": "LISTAR_CURSOS",
+          "step": "CATEGORIAS_CURSOS"
+        },
+        {
+          "number": 2,
+          "emoji": "💼",
+          "text": "Negocios",
+          "action": "goToStep",
+          "actionValue": "LISTAR_CURSOS",
+          "step": "CATEGORIAS_CURSOS"
+        },
+        {
+          "number": 3,
+          "emoji": "🎨",
+          "text": "Diseño",
+          "action": "goToStep",
+          "actionValue": "LISTAR_CURSOS",
+          "step": "CATEGORIAS_CURSOS"
+        },
+        {
+          "number": 4,
+          "emoji": "🗣️",
+          "text": "Idiomas",
+          "action": "goToStep",
+          "actionValue": "LISTAR_CURSOS",
+          "step": "CATEGORIAS_CURSOS"
+        },
+        {
+          "number": 5,
+          "emoji": "⬅️",
+          "text": "Volver al inicio",
+          "action": "goToStep",
+          "actionValue": "INITIAL",
+          "step": "CATEGORIAS_CURSOS"
+        },
+        {
+          "number": 1,
+          "emoji": "📘",
+          "text": "Curso 1",
+          "action": "goToStep",
+          "actionValue": "DETALLE_CURSO",
+          "step": "LISTAR_CURSOS"
+        },
+        {
+          "number": 2,
+          "emoji": "📘",
+          "text": "Curso 2",
+          "action": "goToStep",
+          "actionValue": "DETALLE_CURSO",
+          "step": "LISTAR_CURSOS"
+        },
+        {
+          "number": 3,
+          "emoji": "📘",
+          "text": "Curso 3",
+          "action": "goToStep",
+          "actionValue": "DETALLE_CURSO",
+          "step": "LISTAR_CURSOS"
+        },
+        {
+          "number": 4,
+          "emoji": "🔍",
+          "text": "Buscar",
+          "action": "sendMessage",
+          "actionValue": "BUSCAR_CURSO",
+          "step": "LISTAR_CURSOS"
+        },
+        {
+          "number": 5,
+          "emoji": "⬅️",
+          "text": "Volver a categorías",
+          "action": "goToStep",
+          "actionValue": "CATEGORIAS_CURSOS",
+          "step": "LISTAR_CURSOS"
+        },
+        {
+          "number": 1,
+          "emoji": "✅",
+          "text": "Inscribirme",
+          "action": "sendMessage",
+          "actionValue": "INSCRIPCION_CURSO",
+          "step": "DETALLE_CURSO"
+        },
+        {
+          "number": 2,
+          "emoji": "📝",
+          "text": "Ver temario",
+          "action": "sendMessage",
+          "actionValue": "VER_TEMARIO",
+          "step": "DETALLE_CURSO"
+        },
+        {
+          "number": 3,
+          "emoji": "👨‍🏫",
+          "text": "Información del instructor",
+          "action": "sendMessage",
+          "actionValue": "INFO_INSTRUCTOR",
+          "step": "DETALLE_CURSO"
+        },
+        {
+          "number": 4,
+          "emoji": "📖",
+          "text": "Iniciar primera lección",
+          "action": "goToStep",
+          "actionValue": "LECCION",
+          "step": "DETALLE_CURSO"
+        },
+        {
+          "number": 5,
+          "emoji": "⬅️",
+          "text": "Volver a cursos",
+          "action": "goToStep",
+          "actionValue": "LISTAR_CURSOS",
+          "step": "DETALLE_CURSO"
+        },
+        {
+          "number": 1,
+          "emoji": "➡️",
+          "text": "Siguiente lección",
+          "action": "sendMessage",
+          "actionValue": "SIGUIENTE_LECCION",
+          "step": "LECCION"
+        },
+        {
+          "number": 2,
+          "emoji": "⬅️",
+          "text": "Lección anterior",
+          "action": "sendMessage",
+          "actionValue": "LECCION_ANTERIOR",
+          "step": "LECCION"
+        },
+        {
+          "number": 3,
+          "emoji": "❓",
+          "text": "Realizar quiz",
+          "action": "goToStep",
+          "actionValue": "QUIZ",
+          "step": "LECCION"
+        },
+        {
+          "number": 4,
+          "emoji": "📋",
+          "text": "Índice del curso",
+          "action": "goToStep",
+          "actionValue": "DETALLE_CURSO",
+          "step": "LECCION"
+        },
+        {
+          "number": 1,
+          "emoji": "A",
+          "text": "Opción A",
+          "action": "sendMessage",
+          "actionValue": "RESPUESTA_A",
+          "step": "QUIZ"
+        },
+        {
+          "number": 2,
+          "emoji": "B",
+          "text": "Opción B",
+          "action": "sendMessage",
+          "actionValue": "RESPUESTA_B",
+          "step": "QUIZ"
+        },
+        {
+          "number": 3,
+          "emoji": "C",
+          "text": "Opción C",
+          "action": "sendMessage",
+          "actionValue": "RESPUESTA_C",
+          "step": "QUIZ"
+        },
+        {
+          "number": 4,
+          "emoji": "D",
+          "text": "Opción D",
+          "action": "sendMessage",
+          "actionValue": "RESPUESTA_D",
+          "step": "QUIZ"
+        },
+        {
+          "number": 5,
+          "emoji": "⬅️",
+          "text": "Volver a la lección",
+          "action": "goToStep",
+          "actionValue": "LECCION",
+          "step": "QUIZ"
+        }
+      ],
+      "messages": {
+        "welcome": "🎓 *Plataforma Educativa*\n\n¡Bienvenido a tu portal de aprendizaje! ¿Qué deseas hacer hoy?",
+        "CATEGORIAS_CURSOS": "📚 *Categorías de Cursos*\n\nSelecciona una categoría para explorar:",
+        "LISTAR_CURSOS": "📖 *Cursos de ${categoria}*\n\n${cursos}\n\nSelecciona un curso para ver detalles:",
+        "DETALLE_CURSO": "📋 *${nombreCurso}*\n\nDuración: ${duracion}\nNivel: ${nivel}\nInstructor: ${instructor}\n\nDescripción: ${descripcion}\n\nContenido: ${contenido}\n\n¿Deseas inscribirte en este curso?",
+        "INSCRIPCION_CURSO": "✅ *¡Inscripción Exitosa!*\n\nTe has inscrito correctamente al curso \"${nombreCurso}\".\n\n¿Deseas comenzar ahora tu primera lección?",
+        "LECCION": "📝 *Lección ${numeroLeccion}: ${tituloLeccion}*\n\n${contenidoLeccion}\n\n¿Deseas continuar con la siguiente lección o realizar un quiz para evaluar tu aprendizaje?",
+        "QUIZ": "❓ *Quiz - ${tituloLeccion}*\n\n${pregunta}\n\nSelecciona la respuesta correcta:",
+        "resultadoQuiz": "📊 *Resultado del Quiz*\n\nRespuestas correctas: ${correctas}/${total}\n\n¡${mensaje}!",
+        "MIS_CURSOS": "📚 *Mis Cursos*\n\n${cursos}\n\nSelecciona un curso para continuar:",
+        "BUSCAR_CURSO": "🔍 Por favor, escribe el nombre o palabra clave del curso que deseas buscar:",
+        "MI_PROGRESO": "📊 *Mi Progreso*\n\n${progreso}",
+        "CERTIFICACIONES": "🎓 *Mis Certificaciones*\n\n${certificaciones}",
+        "VER_TEMARIO": "📑 *Temario del curso ${nombreCurso}*\n\n${temario}",
+        "INFO_INSTRUCTOR": "👨‍🏫 *Información del Instructor*\n\nNombre: ${nombreInstructor}\nEspecialidad: ${especialidad}\nExperiencia: ${experiencia}\n\n${bioInstructor}",
+        "SIGUIENTE_LECCION": "⏭️ Avanzando a la siguiente lección...",
+        "LECCION_ANTERIOR": "⏮️ Volviendo a la lección anterior...",
+        "RESPUESTA_A": "✅ ¡Respuesta correcta! / ❌ Respuesta incorrecta. La respuesta correcta es: ${respuestaCorrecta}",
+        "RESPUESTA_B": "✅ ¡Respuesta correcta! / ❌ Respuesta incorrecta. La respuesta correcta es: ${respuestaCorrecta}",
+        "RESPUESTA_C": "✅ ¡Respuesta correcta! / ❌ Respuesta incorrecta. La respuesta correcta es: ${respuestaCorrecta}",
+        "RESPUESTA_D": "✅ ¡Respuesta correcta! / ❌ Respuesta incorrecta. La respuesta correcta es: ${respuestaCorrecta}"
+      },
+      "active": true,
+      "conditions": [],
+      "variables": {},
+      "validations": {},
+      "loops": [],
+      "timers": [],
+      "schedules": {
+        "enabled": false,
+        "workingHours": {
+          "monday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          },
+          "tuesday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          }
+        },
+        "timezone": "America/Mexico_City",
+        "outsideHoursMessage": "Estamos fuera de horario"
+      }
+    },
+    {
+      "name": "PROCESO_RESERVACION",
+      "description": "Sistema completo para reservaciones",
+      "steps": [
+        "INITIAL",
+        "SELECCIONAR_SERVICIO",
+        "SELECCIONAR_FECHA",
+        "SELECCIONAR_HORA",
+        "DATOS_CLIENTE",
+        "CONFIRMAR_RESERVA"
+      ],
+      "options": [
+        {
+          "number": 1,
+          "emoji": "📅",
+          "text": "Nueva reservación",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_SERVICIO",
+          "step": "INITIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "🔍",
+          "text": "Mis reservaciones",
+          "action": "sendMessage",
+          "actionValue": "MIS_RESERVACIONES",
+          "step": "INITIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "❓",
+          "text": "Preguntas frecuentes",
+          "action": "sendMessage",
+          "actionValue": "FAQ_RESERVACIONES",
+          "step": "INITIAL"
+        },
+        {
+          "number": 4,
+          "emoji": "⬅️",
+          "text": "Regresar al menú",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "INITIAL"
+        },
+        {
+          "number": 1,
+          "emoji": "💇",
+          "text": "Servicio 1",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_FECHA",
+          "step": "SELECCIONAR_SERVICIO"
+        },
+        {
+          "number": 2,
+          "emoji": "💆",
+          "text": "Servicio 2",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_FECHA",
+          "step": "SELECCIONAR_SERVICIO"
+        },
+        {
+          "number": 3,
+          "emoji": "💅",
+          "text": "Servicio 3",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_FECHA",
+          "step": "SELECCIONAR_SERVICIO"
+        },
+        {
+          "number": 4,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToStep",
+          "actionValue": "INITIAL",
+          "step": "SELECCIONAR_SERVICIO"
+        },
+        {
+          "number": 1,
+          "emoji": "📆",
+          "text": "Hoy",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_HORA",
+          "step": "SELECCIONAR_FECHA"
+        },
+        {
+          "number": 2,
+          "emoji": "📆",
+          "text": "Mañana",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_HORA",
+          "step": "SELECCIONAR_FECHA"
+        },
+        {
+          "number": 3,
+          "emoji": "📆",
+          "text": "Esta semana",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_HORA",
+          "step": "SELECCIONAR_FECHA"
+        },
+        {
+          "number": 4,
+          "emoji": "⬅️",
+          "text": "Cambiar servicio",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_SERVICIO",
+          "step": "SELECCIONAR_FECHA"
+        },
+        {
+          "number": 1,
+          "emoji": "⏰",
+          "text": "Mañana (9-12)",
+          "action": "goToStep",
+          "actionValue": "DATOS_CLIENTE",
+          "step": "SELECCIONAR_HORA"
+        },
+        {
+          "number": 2,
+          "emoji": "⏰",
+          "text": "Tarde (2-5)",
+          "action": "goToStep",
+          "actionValue": "DATOS_CLIENTE",
+          "step": "SELECCIONAR_HORA"
+        },
+        {
+          "number": 3,
+          "emoji": "⏰",
+          "text": "Noche (6-8)",
+          "action": "goToStep",
+          "actionValue": "DATOS_CLIENTE",
+          "step": "SELECCIONAR_HORA"
+        },
+        {
+          "number": 4,
+          "emoji": "⬅️",
+          "text": "Cambiar fecha",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_FECHA",
+          "step": "SELECCIONAR_HORA"
+        },
+        {
+          "number": 1,
+          "emoji": "✅",
+          "text": "Confirmar Datos",
+          "action": "sendMessage",
+          "actionValue": "RESERVA_EXITOSA",
+          "step": "CONFIRMAR_RESERVA"
+        },
+        {
+          "number": 2,
+          "emoji": "📅",
+          "text": "Cambiar Fecha/Hora",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_FECHA",
+          "step": "CONFIRMAR_RESERVA"
+        },
+        {
+          "number": 3,
+          "emoji": "🔄",
+          "text": "Cambiar Servicio",
+          "action": "goToStep",
+          "actionValue": "SELECCIONAR_SERVICIO",
+          "step": "CONFIRMAR_RESERVA"
+        },
+        {
+          "number": 4,
+          "emoji": "❌",
+          "text": "Cancelar Reserva",
+          "action": "goToStep",
+          "actionValue": "INITIAL",
+          "step": "CONFIRMAR_RESERVA"
+        },
+        {
+          "number": 5,
+          "emoji": "1️⃣",
+          "text": "Por favor, envía tu nombre completo:",
+          "action": "goToStep",
+          "actionValue": "CONFIRMAR_RESERVA",
+          "step": "CONFIRMAR_RESERVA"
+        }
+      ],
+      "messages": {
+        "welcome": "📅 *Sistema de Reservaciones*\n\n¿Qué deseas hacer?",
+        "SELECCIONAR_SERVICIO": "Por favor, selecciona el servicio que deseas reservar:",
+        "servicioSeleccionado": "Has seleccionado: *${servicio}*\n\nAhora, elige una fecha disponible:",
+        "SELECCIONAR_FECHA": "Por favor, selecciona una fecha para tu reserva:",
+        "fechaSeleccionada": "Fecha seleccionada: *${fecha}*\n\nPor favor, elige un horario disponible:",
+        "SELECCIONAR_HORA": "Selecciona un horario disponible para el ${fecha}:",
+        "horaSeleccionada": "Has seleccionado: ${fecha} a las ${hora}.\n\nPor favor, proporciona tus datos de contacto:",
+        "DATOS_CLIENTE": "Por favor, envía tu nombre completo:",
+        "telefonoCliente": "Gracias, ${nombre}. Ahora, envía tu número telefónico:",
+        "emailCliente": "Excelente. Por último, envía tu correo electrónico:",
+        "CONFIRMAR_RESERVA": "📋 *Resumen de tu Reserva*\n\nServicio: ${servicio}\nFecha: ${fecha}\nHora: ${hora}\nNombre: ${nombre}\nTeléfono: ${telefono}\nEmail: ${email}\n\n¿Los datos son correctos?",
+        "RESERVA_EXITOSA": "✅ *¡Reserva Confirmada!*\n\nTu código de reserva es: ${codigo}\n\nTe hemos enviado un correo con todos los detalles.\n\nRecuerda llegar 15 minutos antes de tu cita.",
+        "MIS_RESERVACIONES": "Actualmente no tienes reservaciones activas.",
+        "FAQ_RESERVACIONES": "❓ *Preguntas Frecuentes - Reservaciones*\n\n1. ¿Puedo cancelar mi reserva?\nSí, puedes cancelar hasta 24 horas antes sin costo.\n\n2. ¿Qué sucede si llego tarde?\nTenemos una tolerancia de 15 minutos, después de ese tiempo la reserva podría ser cancelada.\n\n3. ¿Cómo puedo reprogramar?\nPuedes reprogramar tu cita hasta 24 horas antes a través de este mismo chat."
+      },
+      "active": true,
+      "conditions": [],
+      "variables": {},
+      "validations": {},
+      "loops": [],
+      "timers": [],
+      "schedules": {
+        "enabled": false,
+        "workingHours": {
+          "monday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          },
+          "tuesday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          }
+        },
+        "timezone": "America/Mexico_City",
+        "outsideHoursMessage": "Estamos fuera de horario"
+      }
+    },
+    {
+      "name": "TUTORIAL_ONBOARDING",
+      "description": "Sistema de tutorial y onboarding para nuevos usuarios",
+      "steps": [
+        "INITIAL",
+        "BIENVENIDA",
+        "PASO_1",
+        "PASO_2",
+        "PASO_3",
+        "PASO_4",
+        "FINALIZAR"
+      ],
+      "options": [
+        {
+          "number": 1,
+          "emoji": "▶️",
+          "text": "Iniciar tutorial",
+          "action": "goToStep",
+          "actionValue": "BIENVENIDA",
+          "step": "INITIAL"
+        },
+        {
+          "number": 2,
+          "emoji": "❓",
+          "text": "Preguntas Frecuentes",
+          "action": "sendMessage",
+          "actionValue": "FAQ_TUTORIAL",
+          "step": "INITIAL"
+        },
+        {
+          "number": 3,
+          "emoji": "⬅️",
+          "text": "Regresar",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "INITIAL"
+        },
+        {
+          "number": 1,
+          "emoji": "▶️",
+          "text": "Continuar",
+          "action": "goToStep",
+          "actionValue": "PASO_1",
+          "step": "BIENVENIDA"
+        },
+        {
+          "number": 2,
+          "emoji": "⏩",
+          "text": "Saltar Tutorial",
+          "action": "goToStep",
+          "actionValue": "FINALIZAR",
+          "step": "BIENVENIDA"
+        },
+        {
+          "number": 1,
+          "emoji": "▶️",
+          "text": "Continuar",
+          "action": "goToStep",
+          "actionValue": "PASO_2",
+          "step": "PASO_1"
+        },
+        {
+          "number": 2,
+          "emoji": "⏪",
+          "text": "Anterior",
+          "action": "goToStep",
+          "actionValue": "BIENVENIDA",
+          "step": "PASO_1"
+        },
+        {
+          "number": 3,
+          "emoji": "⏩",
+          "text": "Saltar Tutorial",
+          "action": "goToStep",
+          "actionValue": "FINALIZAR",
+          "step": "PASO_1"
+        },
+        {
+          "number": 1,
+          "emoji": "▶️",
+          "text": "Continuar",
+          "action": "goToStep",
+          "actionValue": "PASO_3",
+          "step": "PASO_2"
+        },
+        {
+          "number": 2,
+          "emoji": "⏪",
+          "text": "Anterior",
+          "action": "goToStep",
+          "actionValue": "PASO_1",
+          "step": "PASO_2"
+        },
+        {
+          "number": 3,
+          "emoji": "⏩",
+          "text": "Saltar Tutorial",
+          "action": "goToStep",
+          "actionValue": "FINALIZAR",
+          "step": "PASO_2"
+        },
+        {
+          "number": 1,
+          "emoji": "▶️",
+          "text": "Continuar",
+          "action": "goToStep",
+          "actionValue": "PASO_4",
+          "step": "PASO_3"
+        },
+        {
+          "number": 2,
+          "emoji": "⏪",
+          "text": "Anterior",
+          "action": "goToStep",
+          "actionValue": "PASO_2",
+          "step": "PASO_3"
+        },
+        {
+          "number": 3,
+          "emoji": "⏩",
+          "text": "Saltar Tutorial",
+          "action": "goToStep",
+          "actionValue": "FINALIZAR",
+          "step": "PASO_3"
+        },
+        {
+          "number": 1,
+          "emoji": "▶️",
+          "text": "Continuar",
+          "action": "goToStep",
+          "actionValue": "FINALIZAR",
+          "step": "PASO_4"
+        },
+        {
+          "number": 2,
+          "emoji": "⏪",
+          "text": "Anterior",
+          "action": "goToStep",
+          "actionValue": "PASO_3",
+          "step": "PASO_4"
+        },
+        {
+          "number": 1,
+          "emoji": "🏠",
+          "text": "Ir al menú principal",
+          "action": "goToFlow",
+          "actionValue": "MENU_PRINCIPAL",
+          "step": "FINALIZAR"
+        },
+        {
+          "number": 2,
+          "emoji": "📖",
+          "text": "Ver pasos de nuevo",
+          "action": "sendMessage",
+          "actionValue": "VER_PASOS",
+          "step": "FINALIZAR"
+        },
+        {
+          "number": 3,
+          "emoji": "❓",
+          "text": "Preguntas frecuentes",
+          "action": "sendMessage",
+          "actionValue": "FAQ_TUTORIAL",
+          "step": "FINALIZAR"
+        }
+      ],
+      "messages": {
+        "welcome": "👋 *Tutorial y Onboarding*\n\n¡Bienvenido al tutorial para nuevos usuarios! Te guiaremos paso a paso para que conozcas todas las funcionalidades de nuestra plataforma.",
+        "BIENVENIDA": "🚀 *¡Comencemos!*\n\n${nombreProducto} es una plataforma que te permite ${descripcionBreve}.\n\nEn este tutorial, aprenderás a utilizar todas sus funcionalidades principales.\n\nPulsa \"Continuar\" para empezar.",
+        "PASO_1": "1️⃣ *${tituloPaso1}*\n\n${descripcionPaso1}\n\n${imagen1}\n\nPulsa \"Continuar\" para ir al siguiente paso.",
+        "PASO_2": "2️⃣ *${tituloPaso2}*\n\n${descripcionPaso2}\n\n${imagen2}\n\nPulsa \"Continuar\" para ir al siguiente paso.",
+        "PASO_3": "3️⃣ *${tituloPaso3}*\n\n${descripcionPaso3}\n\n${imagen3}\n\nPulsa \"Continuar\" para ir al siguiente paso.",
+        "PASO_4": "4️⃣ *${tituloPaso4}*\n\n${descripcionPaso4}\n\n${imagen4}\n\nPulsa \"Continuar\" para finalizar el tutorial.",
+        "FINALIZAR": "🎉 *¡Felicidades!*\n\nHas completado el tutorial de ${nombreProducto}.\n\nAhora estás listo para aprovechar al máximo todas las funcionalidades de nuestra plataforma.\n\n¿Qué deseas hacer ahora?",
+        "VER_PASOS": "📑 *Índice del Tutorial*\n\n1️⃣ ${tituloPaso1}\n2️⃣ ${tituloPaso2}\n3️⃣ ${tituloPaso3}\n4️⃣ ${tituloPaso4}\n\nSelecciona el paso al que deseas ir:",
+        "FAQ_TUTORIAL": "❓ *Preguntas Frecuentes*\n\n1️⃣ ¿Puedo volver a ver este tutorial más adelante?\nSí, puedes acceder al tutorial en cualquier momento desde el menú de ayuda.\n\n2️⃣ ¿Hay versiones avanzadas del tutorial?\nSí, contamos con tutoriales avanzados para cada funcionalidad específica.\n\n3️⃣ ¿Cómo puedo obtener más ayuda?\nPuedes contactar a nuestro equipo de soporte a través del chat o correo electrónico."
+      },
+      "active": true,
+      "conditions": [],
+      "variables": {},
+      "validations": {},
+      "loops": [],
+      "timers": [],
+      "schedules": {
+        "enabled": false,
+        "workingHours": {
+          "monday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          },
+          "tuesday": {
+            "start": "09:00",
+            "end": "18:00",
+            "active": true
+          }
+        },
+        "timezone": "America/Mexico_City",
+        "outsideHoursMessage": "Estamos fuera de horario"
+      }
+    }
+  ],
+  "messages": {
+    "greetings": {
+      "morning": "¡Buenos días! 🌅 ¿Cómo puedo ayudarte hoy?",
+      "afternoon": "¡Buenas tardes! 🌞 ¿En qué puedo asistirte?",
+      "evening": "¡Buenas noches! 🌙 ¿Cómo puedo ayudarte?",
+      "newUser": "¡Hola! Veo que es tu primera vez aquí. Te explico brevemente cómo funciono..."
+    },
+    "errors": {
+      "invalidOption": "❌ Opción no válida. Por favor, selecciona una opción del menú.",
+      "apiError": "😔 Ups, algo salió mal. Por favor, intenta de nuevo en unos momentos.",
+      "outsideHours": "🕐 Estamos fuera de horario de atención.",
+      "userPaused": "⏸️ El asistente está pausado. Escribe \"reactivar\" para continuar."
+    },
+    "confirmations": {
+      "dataSaved": "✅ Información guardada correctamente.",
+      "processComplete": "🎉 ¡Proceso completado exitosamente!",
+      "waitingResponse": "⏳ Procesando tu solicitud, por favor espera...",
+      "goodbye": "👋 ¡Gracias por contactarnos! Que tengas un excelente día."
+    }
+  },
+  "apis": {
+    "folioApi": "",
+    "serviciosApi": "",
+    "garantiasApi": "",
+    "timeout": 30,
+    "retries": 3
+  },
+  "aiConfig": {},
+  "lastUpdated": "2025-05-30T21:03:57.587Z"
+}

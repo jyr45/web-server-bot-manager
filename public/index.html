@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot Manager - Panel de Control</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <!--<link rel="stylesheet" href="css/style.css">-->
+    <link rel="stylesheet" href="css/style_minimal.css">
+    <!-- al final del <head> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+</head>
+
+<body>
+    <script>
+        let loginAttempts = 0;
+        const maxAttempts = 50; // Máximo de intentos permitidos
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (loginAttempts >= maxAttempts) {
+                showError('Demasiados intentos fallidos. Espera 5 minutos.');
+                return;
+            }
+
+            const loginBtn = document.getElementById('loginBtn');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            if (!email || !password) {
+                showError('Por favor, completa todos los campos');
+                return;
+            }
+
+            // Mostrar loading
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<div class="loading"></div> Iniciando sesión...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        rememberMe
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar token y datos usando el módulo auth
+                    const storage = rememberMe ? localStorage : sessionStorage;
+                    storage.setItem('authToken', data.token);
+                    storage.setItem('userData', JSON.stringify(data.user));
+
+                    showSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
+
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    loginAttempts++;
+                    showError(data.error || 'Error al iniciar sesión');
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                showError('Error de conexión. Verifica tu internet.');
+            } finally {
+                // Restaurar botón
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Iniciar Sesión';
+            }
+        });
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            successDiv.style.display = 'none';
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            errorDiv.style.display = 'none';
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        function showForgotPassword() {
+            alert('Contacta al administrador del sistema para restablecer tu contraseña.');
+        }
+
+        // Verificar si ya está logueado
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            if (token) {
+                // Verificar token válido
+                fetch('/api/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/';
+                        }
+                    })
+                    .catch(() => {
+                        // Token inválido, limpiar
+                        localStorage.removeItem('authToken');
+                        sessionStorage.removeItem('authToken');
+                        localStorage.removeItem('userData');
+                        sessionStorage.removeItem('userData');
+                    });
+            }
+        });
+
+        // Limitar intentos de login por tiempo
+        setTimeout(() => {
+            loginAttempts = 0;
+        }, 300000); // Reset después de 5 minutos
+    </script>
+    <script>
+        // Función global para manejo de cambio de secciones que activa el monitor QR
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Mostrar la sección seleccionada
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+
+                // Si es la sección de monitor de bots, inicializar o recargar
+                if (sectionId === 'bot-monitor' && typeof loadMonitorTab === 'function') {
+                    loadMonitorTab();
+                }
+            }
+
+            // Actualizar navegación
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
+            }
+        }
+    </script>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> WhatsApp Bot Manager</h1>
+            <p>Plataforma de Gestión Integral de Bots para Empresas</p>
+        </div>
+
+        <div class="main-content">
+            <nav class="sidebar">
+                <div class="nav-section">
+                    <div class="nav-section-title">Panel Principal</div>
+                    <a href="#" class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-chart-bar"></i> Dashboard
+                    </a>
+                    <a href="#" class="nav-item" data-section="plans">
+                        <i class="fas fa-dollar-sign"></i> Planes y Precios
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Usuario</div>
+                    <a href="#" class="nav-item" data-section="profile">
+                        <i class="fas fa-user-circle"></i> Mi Perfil
+                    </a>
+                    <a href="#" class="nav-item" onclick="auth.logout()">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Gestión de Bots</div>
+                    <a href="#" class="nav-item" data-section="bot-monitor">
+                        <i class="fas fa-qrcode"></i> Monitor de Bots
+                    </a>
+
+                    <a href="#" class="nav-item" data-section="bots">
+                        <i class="fas fa-robot"></i> Mis Bots
+                    </a>
+                    <a href="#" class="nav-item" data-section="create-bot">
+                        <i class="fas fa-plus"></i> Crear Nuevo Bot
+                    </a>
+                    <a href="#" class="nav-item" data-section="templates">
+                        <i class="fas fa-clipboard-list"></i> Plantillas
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Configuración</div>
+                    <a href="#" class="nav-item" data-section="flows">
+                        <i class="fas fa-project-diagram"></i> Flujos
+                    </a>
+                    <a href="#" class="nav-item" data-section="menus" disabled>
+                        <i class="fas fa-mobile-alt"></i> Menús
+                    </a>
+                    <a href="#" class="nav-item" data-section="apis" disabled>
+                        <i class="fas fa-plug"></i> APIs
+                    </a>
+                    <a href="#" class="nav-item" data-section="ai-config" disabled>
+                        <i class="fas fa-brain"></i> IA & Gemini
+                    </a>
+                    <a href="#" class="nav-item" data-section="messages" disabled>
+                        <i class="fas fa-comments"></i> Mensajes
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Monitoreo</div>
+                    <a href="#" class="nav-item" data-section="analytics" disabled>
+                        <i class="fas fa-chart-line"></i> Analíticas
+                    </a>
+                    <a href="#" class="nav-item" data-section="users" disabled>
+                        <i class="fas fa-users"></i> Usuarios
+                    </a>
+                    <a href="#" class="nav-item" data-section="logs" disabled>
+                        <i class="fas fa-clipboard-list"></i> Logs
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Avanzado</div>
+                    <a href="#" class="nav-item" data-section="code-generator" disabled>
+                        <i class="fas fa-code"></i> Generador
+                    </a>
+                    <a href="#" class="nav-item" data-section="deploy" disabled>
+                        <i class="fas fa-rocket"></i> Despliegue
+                    </a>
+                    <a href="#" class="nav-item" data-section="backup" disabled>
+                        <i class="fas fa-save"></i> Respaldos
+                    </a>
+                </div>
+            </nav>
+
+            <div class="content-area">
+                <!-- Dashboard -->
+                <div id="dashboard" class="section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalBots">0</div>
+                            <div class="stat-label">Bots Activos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalMessages">0</div>
+                            <div class="stat-label">Mensajes Hoy</div>
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div class="stat-value" id="totalClients">0</div>
+                            <div class="stat-label">Clientes</div>
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div class="stat-value" id="monthlyRevenue">$0</div>
+                            <div class="stat-label">Ingresos/Mes</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3><i class="fas fa-globe"></i> Estado del Sistema</h3>
+                        <div class="grid-3">
+                            <div>
+                                <p><strong>Servidor:</strong> <span class="status-indicator status-online"><span
+                                            class="status-dot"></span>Operativo</span></p>
+                                <p><strong>Base de Datos:</strong> <span class="status-indicator status-online"><span
+                                            class="status-dot"></span>Conectada</span></p>
+                            </div>
+                            <!--<div>
+                                <p><strong>WhatsApp API:</strong> <span class="status-indicator status-online"><span
+                                            class="status-dot"></span>Funcional</span></p>
+                                <p><strong>Gemini AI:</strong> <span class="status-indicator status-online"><span
+                                            class="status-dot"></span>Disponible</span></p>
+                            </div>-->
+                            <div>
+                                <!--<p><strong>SSL/HTTPS:</strong> <span class="status-indicator status-online"><span
+                                            class="status-dot"></span>Activo</span></p>-->
+                                <p><strong>WebSocket:</strong> <span class="status-indicator status-online"><span
+                                            class="status-dot"></span>Conectado</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3><i class="fas fa-mobile-alt"></i> Bots Recientes</h3>
+                        <div id="recentBots">
+                            <div class="empty-state">
+                                <i class="fas fa-robot"></i>
+                                <h4>¡Bienvenido al Bot Manager!</h4>
+                                <p>No tienes bots creados aún. ¡Comienza creando tu primer bot!</p>
+                                <button class="btn btn-primary" onclick="showSection('create-bot')">
+                                    <i class="fas fa-plus"></i> Crear Mi Primer Bot
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planes y Precios -->
+                <div id="plans" class="section">
+                    <div class="card">
+                        <h2 style="text-align: center; margin-bottom: 30px;">
+                            <i class="fas fa-crown"></i> Planes de Servicio
+                        </h2>
+                        <div class="grid-3">
+                            <div class="plan-card" data-plan="emprendedor" onclick="selectPlan('emprendedor')">
+                                <h4><i class="fas fa-rocket"></i> Plan Emprendedor Local</h4>
+                                <div class="plan-price">$1,199<small>/mes</small></div>
+                                <div style="margin-bottom: 20px; color: #6c757d;">💡 Flexible: $2,000 + $699/mes</div>
+                                <ul class="feature-list">
+                                    <li>Bot con 3 flujos conversacionales</li>
+                                    <li>Hasta 1,500 mensajes/mes</li>
+                                    <li>Configuración personalizada inicial</li>
+                                    <li>Soporte por WhatsApp y email</li>
+                                    <li>Instalación remota incluida</li>
+                                    <li>Capacitación paso a paso</li>
+                                    <li>1 ajuste de flujos al mes</li>
+                                </ul>
+                                <button class="btn btn-primary" onclick="selectPlan('emprendedor')">
+                                    <i class="fas fa-check"></i> Seleccionar Plan
+                                </button>
+                            </div>
+
+                            <div class="plan-card" data-plan="profesional" onclick="selectPlan('profesional')">
+                                <h4><i class="fas fa-star"></i> Plan Profesional Eficiente</h4>
+                                <div class="plan-price">$2,999<small>/mes</small></div>
+                                <div style="margin-bottom: 20px; color: #6c757d;">💡 Flexible: $4,000 + $1,599/mes</div>
+                                <ul class="feature-list">
+                                    <li>Todo del Plan Emprendedor Local</li>
+                                    <li>Hasta 7 flujos conversacionales</li>
+                                    <li>Hasta 5,000 mensajes/mes</li>
+                                    <li>Integración API básica</li>
+                                    <li>Soporte prioritario por teléfono</li>
+                                    <li>Reportes básicos de analítica</li>
+                                    <li>Visita técnica trimestral</li>
+                                    <li>2 ajustes de flujos al mes</li>
+                                </ul>
+                                <button class="btn btn-primary" onclick="selectPlan('profesional')">
+                                    <i class="fas fa-check"></i> Seleccionar Plan
+                                </button>
+                            </div>
+
+                            <div class="plan-card" data-plan="empresarial" onclick="selectPlan('empresarial')">
+                                <h4><i class="fas fa-building"></i> Plan Empresarial Avanzado</h4>
+                                <div class="plan-price">$6,999<small>/mes</small></div>
+                                <div style="margin-bottom: 20px; color: #6c757d;">💡 Flexible: $8,000 + $4,499/mes</div>
+                                <ul class="feature-list">
+                                    <li>Todo del Plan Profesional</li>
+                                    <li>Flujos conversacionales ilimitados</li>
+                                    <li>Mensajes virtualmente ilimitados</li>
+                                    <li>Múltiples números/bots</li>
+                                    <li>Integraciones API avanzadas</li>
+                                    <li>Consultoría en automatización</li>
+                                    <li>Garantía SLA</li>
+                                    <li>Soporte premium presencial</li>
+                                </ul>
+                                <button class="btn btn-primary" onclick="selectPlan('empresarial')">
+                                    <i class="fas fa-check"></i> Seleccionar Plan
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; padding: 30px; border-radius: 15px; margin-top: 30px; text-align: center;">
+                            <h3><i class="fas fa-gift"></i> Promoción de Lanzamiento - Solo Tapachula</h3>
+                            <div class="grid-2" style="margin-top: 20px;">
+                                <div>
+                                    <h4><i class="fas fa-percentage"></i> 25% de Descuento</h4>
+                                    <p>En los primeros 3 meses</p>
+                                </div>
+                                <div>
+                                    <h4><i class="fas fa-home"></i> Instalación Gratis</h4>
+                                    <p>Para los primeros 10 clientes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monitor de Bots y QR Codes -->
+                <div id="bot-monitor" class="section">
+                    <div class="card">
+                        <h3><i class="fas fa-qrcode"></i> Monitor de Bots y Códigos QR</h3>
+
+                        <!-- Selector de Bot -->
+                        <div style="margin-bottom: 20px;">
+                            <select class="form-control" id="selectedBotForMonitor"
+                                style="width: 300px; display: inline-block;">
+                                <option value="">Selecciona un bot para monitorear</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="refreshBotMonitor()">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                            <button class="btn btn-success" onclick="startSelectedBot()">
+                                <i class="fas fa-play"></i> Iniciar Bot
+                            </button>
+                            <button class="btn btn-warning" onclick="stopSelectedBot()">
+                                <i class="fas fa-stop"></i> Detener Bot
+                            </button>
+                        </div>
+
+                        <!-- Estado del Bot -->
+                        <div class="grid-2" style="margin-bottom: 30px;">
+                            <div class="card" style="background: #f8f9fa;">
+                                <h5><i class="fas fa-info-circle"></i> Estado del Bot</h5>
+                                <div id="botStatusInfo">
+                                    <p>Selecciona un bot para ver su estado</p>
+                                </div>
+                            </div>
+                            <div class="card" style="background: #f8f9fa;">
+                                <h5><i class="fas fa-chart-line"></i> Estadísticas</h5>
+                                <div id="botStatsInfo">
+                                    <p>Las estadísticas aparecerán aquí</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Código QR -->
+                        <div class="card" style="background: #ffffff; border: 2px dashed #25D366; margin-bottom: 20px;">
+                            <h5><i class="fas fa-qrcode"></i> Código QR de WhatsApp</h5>
+                            <div id="qrCodeContainer" style="text-align: center; padding: 20px;">
+                                <div class="empty-state">
+                                    <i class="fas fa-qrcode" style="font-size: 64px; color: #ccc;"></i>
+                                    <h4>Esperando código QR...</h4>
+                                    <div id="qrCanvas"></div>
+                                    <p>Inicia un bot para ver su código QR aquí</p>
+                                    <div class="qr-instructions"
+                                        style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                        <h6><i class="fas fa-mobile-alt"></i> Cómo escanear:</h6>
+                                        <ol style="text-align: left; margin: 10px 0;">
+                                            <li>Abre WhatsApp en tu teléfono</li>
+                                            <li>Ve a Configuración > Dispositivos vinculados</li>
+                                            <li>Toca "Vincular un dispositivo"</li>
+                                            <li>Escanea el código QR que aparece aquí</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Logs en Tiempo Real -->
+                        <div class="card">
+                            <h5><i class="fas fa-terminal"></i> Logs del Bot en Tiempo Real</h5>
+                            <div class="log-controls" style="margin-bottom: 15px;">
+                                <button class="btn btn-secondary" onclick="clearBotLogs()">
+                                    <i class="fas fa-trash"></i> Limpiar Logs
+                                </button>
+                                <button class="btn btn-primary" onclick="downloadBotLogs()">
+                                    <i class="fas fa-download"></i> Descargar
+                                </button>
+                                <label style="margin-left: 20px;">
+                                    <input type="checkbox" id="autoScrollLogs" checked> Auto-scroll
+                                </label>
+                            </div>
+                            <div id="botLogsContainer"
+                                style="background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 8px; height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 10px; white-space: pre-wrap;">
+                                <div style="color: #00ff00;">[INFO] Monitor de logs iniciado - Esperando actividad
+                                    del
+                                    bot...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mis Bots -->
+                <div id="bots" class="section">
+                    <div class="card">
+                        <h3><i class="fas fa-robot"></i> Gestión de Bots</h3>
+                        <div style="margin-bottom: 20px;">
+                            <button class="btn btn-primary" onclick="showSection('create-bot')">
+                                <i class="fas fa-plus"></i> Crear Nuevo Bot
+                            </button>
+                            <button class="btn btn-secondary" onclick="refreshBots()">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                            <button class="btn btn-warning" onclick="exportBots()">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                        </div>
+
+                        <div id="botsList">
+                            <div class="empty-state">
+                                <i class="fas fa-robot"></i>
+                                <h4>No tienes bots creados</h4>
+                                <p>¡Comienza creando tu primer bot para automatizar tu negocio!</p>
+                                <button class="btn btn-primary" onclick="showSection('create-bot')">
+                                    <i class="fas fa-plus"></i> Crear Mi Primer Bot
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crear Nuevo Bot -->
+                <div id="create-bot" class="section">
+                    <div class="card">
+                        <h3><i class="fas fa-plus"></i> Asistente de Creación de Bot</h3>
+
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="wizardProgress" style="width: 25%;"></div>
+                        </div>
+
+                        <!-- Paso 1: Información Básica -->
+                        <div class="wizard-step active" id="step1">
+                            <h4><i class="fas fa-info-circle"></i> Paso 1: Información Básica</h4>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Nombre del Bot *</label>
+                                    <input type="text" class="form-control" id="botName"
+                                        placeholder="Ej: Bot JOGM Servicios" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Empresa/Cliente *</label>
+                                    <input type="text" class="form-control" id="companyName"
+                                        placeholder="Ej: JOGM Servicios" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Plan Seleccionado</label>
+                                <select class="form-control" id="selectedPlan">
+                                    <option value="emprendedor">Emprendedor Local ($1,199/mes)</option>
+                                    <option value="profesional">Profesional Eficiente ($2,999/mes)</option>
+                                    <option value="empresarial">Empresarial Avanzado ($6,999/mes)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción del Negocio</label>
+                                <textarea class="form-control" id="businessDescription" rows="3"
+                                    placeholder="Describe brevemente el giro del negocio y los servicios que ofrece..."></textarea>
+                            </div>
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button class="btn btn-primary" onclick="nextStep(2)">
+                                    <i class="fas fa-arrow-right"></i> Siguiente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2: Configuración WhatsApp -->
+                        <div class="wizard-step" id="step2">
+                            <h4><i class="fab fa-whatsapp"></i> Paso 2: Configuración WhatsApp</h4>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Número de Administrador *
+                                        <span class="tooltip" data-tooltip="Formato: 521 + 10 dígitos (México)">
+                                            <i class="fas fa-question-circle"></i>
+                                        </span>
+                                    </label>
+                                    <input type="text" class="form-control" id="adminNumber" placeholder="521XXXXXXXXXX"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Prefijo de Comandos Admin</label>
+                                    <input type="text" class="form-control" id="commandPrefix" value="!" maxlength="1">
+                                </div>
+                            </div>
+
+                            <div class="url-preview">
+                                <h5><i class="fas fa-link"></i> URL de tu Bot</h5>
+                                <div class="url">https://localhost/<span id="tokenPreview">xxxxx</span></div>
+                                <p>Esta será la URL única de tu bot en el servidor</p>
+                                <input type="hidden" id="botToken">
+                                <button type="button" class="btn btn-secondary" onclick="generateBotToken()">
+                                    <i class="fas fa-sync"></i> Generar Nuevo Token
+                                </button>
+                            </div>
+
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button class="btn btn-secondary" onclick="prevStep(1)">
+                                    <i class="fas fa-arrow-left"></i> Anterior
+                                </button>
+                                <button class="btn btn-primary" onclick="nextStep(3)">
+                                    <i class="fas fa-arrow-right"></i> Siguiente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Paso 3: Integraciones -->
+                        <div class="wizard-step" id="step3">
+                            <h4><i class="fas fa-plug"></i> Paso 3: Integraciones y APIs</h4>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>URL Base de API (Opcional)</label>
+                                    <input type="url" class="form-control" id="apiBaseUrl"
+                                        placeholder="https://miempresa.com/api/">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contraseña/Token de API</label>
+                                    <input type="password" class="form-control" id="apiPassword"
+                                        placeholder="Token de acceso a tu API">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="enableAI" style="margin-right: 10px;"
+                                        onchange="toggleAIConfig()">
+                                    Habilitar Asistente con Inteligencia Artificial (Gemini)
+                                </label>
+                            </div>
+
+                            <div id="aiConfig" style="display: none;">
+                                <div class="form-group">
+                                    <label>Google API Key (Gemini)</label>
+                                    <input type="password" class="form-control" id="geminiApiKey"
+                                        placeholder="Ingresa tu API Key de Google Gemini">
+                                    <small style="color: #6c757d;">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        <a href="https://makersuite.google.com/app/apikey" target="_blank">Obtener API
+                                            Key gratis aquí</a>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button class="btn btn-secondary" onclick="prevStep(2)">
+                                    <i class="fas fa-arrow-left"></i> Anterior
+                                </button>
+                                <button class="btn btn-primary" onclick="nextStep(4)">
+                                    <i class="fas fa-arrow-right"></i> Siguiente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Paso 4: Finalizar -->
+                        <div class="wizard-step" id="step4">
+                            <h4><i class="fas fa-check-circle"></i> Paso 4: Configuraciones Finales</h4>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Timeout de Sesión (minutos)</label>
+                                    <input type="number" class="form-control" id="sessionTimeout" value="15" min="5"
+                                        max="120">
+                                </div>
+                                <div class="form-group">
+                                    <label>Pausa por Defecto (minutos)</label>
+                                    <input type="number" class="form-control" id="defaultPause" value="30" min="10"
+                                        max="1440">
+                                </div>
+                            </div>
+
+                            <div class="card" style="background: #f8f9fa; border: 2px dashed #25D366;">
+                                <h5><i class="fas fa-eye"></i> Resumen de Configuración</h5>
+                                <div id="botSummary">
+                                    <!-- Se llenará dinámicamente -->
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button class="btn btn-secondary" onclick="prevStep(3)">
+                                    <i class="fas fa-arrow-left"></i> Anterior
+                                </button>
+                                <button class="btn btn-success" onclick="createBot()" id="createBotBtn">
+                                    <i class="fas fa-rocket"></i> Crear Bot
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plantillas -->
+                <div id="templates" class="section">
+                    <div class="card">
+                        <h3><i class="fas fa-clipboard-list"></i> Plantillas de Bot</h3>
+                        <p style="margin-bottom: 30px;">Selecciona una plantilla para crear rápidamente un bot
+                            especializado para tu tipo de negocio.</p>
+
+                        <div class="grid-3">
+                            <div class="bot-card" onclick="selectTemplate('servicios')">
+                                <h4><i class="fas fa-tools"></i> Servicios Técnicos</h4>
+                                <p>Bot especializado para talleres, reparaciones y servicios técnicos.</p>
+                                <ul style="font-size: 0.9rem; color: #6c757d; list-style: none; padding: 0;">
+                                    <li>✓ 7 flujos conversacionales</li>
+                                    <li>✓ Gestión de folios y garantías</li>
+                                    <li>✓ Sistema de citas</li>
+                                    <li>✓ Consulta de estados</li>
+                                </ul>
+                                <button class="btn btn-primary" onclick="applyTemplate('servicios')">
+                                    <i class="fas fa-check"></i> Usar Plantilla
+                                </button>
+                            </div>
+
+                            <div class="bot-card" onclick="selectTemplate('restaurante')">
+                                <h4><i class="fas fa-utensils"></i> Restaurante/Comida</h4>
+                                <p>Bot para restaurantes con menú digital y pedidos a domicilio.</p>
+                                <ul style="font-size: 0.9rem; color: #6c757d; list-style: none; padding: 0;">
+                                    <li>✓ Menú interactivo</li>
+                                    <li>✓ Pedidos a domicilio</li>
+                                    <li>✓ Sistema de reservas</li>
+                                    <li>✓ Promociones especiales</li>
+                                </ul>
+                                <button class="btn btn-primary" onclick="applyTemplate('restaurante')">
+                                    <i class="fas fa-check"></i> Usar Plantilla
+                                </button>
+                            </div>
+
+                            <div class="bot-card" onclick="selectTemplate('personalizado')">
+                                <h4><i class="fas fa-cog"></i> Personalizado</h4>
+                                <p>Crea tu bot desde cero con configuraciones específicas.</p>
+                                <ul style="font-size: 0.9rem; color: #6c757d; list-style: none; padding: 0;">
+                                    <li>✓ Configuración libre</li>
+                                    <li>✓ Flujos personalizados</li>
+                                    <li>✓ Integraciones específicas</li>
+                                    <li>✓ Diseño a medida</li>
+                                </ul>
+                                <button class="btn btn-primary" onclick="applyTemplate('personalizado')">
+                                    <i class="fas fa-check"></i> Usar Plantilla
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flujos Conversacionales Mejorados -->
+                <div id="flows" class="section">
+
+                    <div class="card">
+                        <h3><i class="fas fa-project-diagram"></i> Editor de Flujos Conversacionales</h3>
+
+                        <!-- Barra de herramientas principal -->
+                        <div class="flows-toolbar">
+                            <div class="toolbar-left">
+                                <select class="form-control" id="selectedBotForFlows">
+                                    <option value="">Selecciona un bot para editar</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="addNewFlow()">
+                                    <i class="fas fa-plus"></i> Nuevo Flujo
+                                </button>
+                                <button class="btn btn-secondary" onclick="loadFlows()">
+                                    <i class="fas fa-sync"></i> Actualizar
+                                </button>
+                            </div>
+                            <div class="toolbar-right">
+                                <div class="flow-search">
+                                    <input type="text" class="form-control" placeholder="Buscar flujo..."
+                                        id="flowSearchInput">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <button class="btn btn-outline-secondary" onclick="importFlow()">
+                                    <i class="fas fa-file-import"></i> Importar
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="exportAllFlows()">
+                                    <i class="fas fa-file-export"></i> Exportar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Área de contenido principal -->
+                        <div class="flows-content show-properties"> <!-- Panel izquierdo: Lista de flujos -->
+                            <div class="flows-sidebar" id="flowsList">
+                                <div class="flows-header">
+                                    <h4>Flujos</h4>
+                                    <span class="flows-count" id="flowsCount">0</span>
+                                </div>
+                                <div class="flows-list-container" id="flowsListContainer">
+                                    <div class="empty-state">
+                                        <i class="fas fa-project-diagram"></i>
+                                        <p>No hay flujos disponibles</p>
+                                    </div>
+                                </div>
+                                <!-- Plantillas de flujo actualizadas -->
+                                <div class="flows-templates">
+                                    <h5><i class="fas fa-star"></i> Plantillas Básicas</h5>
+                                    <div class="template-item" onclick="applyFlowTemplate('menuPrincipal')">
+                                        <i class="fas fa-th-large"></i> Menú Principal
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('servicios')">
+                                        <i class="fas fa-concierge-bell"></i> Catálogo de Servicios
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('citas')">
+                                        <i class="fas fa-calendar-check"></i> Agenda de Citas
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('consultas')">
+                                        <i class="fas fa-search"></i> Consulta de Estado
+                                    </div>
+
+                                    <h5><i class="fas fa-shopping-cart"></i> E-commerce</h5>
+                                    <div class="template-item" onclick="applyFlowTemplate('productoCatalogo')">
+                                        <i class="fas fa-store"></i> Catálogo de Productos
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('carritoCompras')">
+                                        <i class="fas fa-shopping-basket"></i> Carrito de Compras
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('gestionPagos')">
+                                        <i class="fas fa-credit-card"></i> Gestión de Pagos
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('campañasPromo')">
+                                        <i class="fas fa-tags"></i> Campañas Promocionales
+                                    </div>
+
+                                    <h5><i class="fas fa-headset"></i> Atención al Cliente</h5>
+                                    <div class="template-item" onclick="applyFlowTemplate('atencionCliente')">
+                                        <i class="fas fa-question-circle"></i> Atención y FAQs
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('contactoSoporte')">
+                                        <i class="fas fa-life-ring"></i> Contacto con Soporte
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('ordenesServicio')">
+                                        <i class="fas fa-tools"></i> Órdenes de Servicio
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('gestionReclamaciones')">
+                                        <i class="fas fa-exclamation-circle"></i> Reclamaciones
+                                    </div>
+
+                                    <h5><i class="fas fa-calendar-alt"></i> Reservaciones</h5>
+                                    <div class="template-item" onclick="applyFlowTemplate('procesoReservacion')">
+                                        <i class="fas fa-bookmark"></i> Sistema de Reservaciones
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('gestionCitas')">
+                                        <i class="fas fa-calendar-plus"></i> Gestión de Citas
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('planificadorEventos')">
+                                        <i class="fas fa-calendar-day"></i> Planificador de Eventos
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('localizadorSucursales')">
+                                        <i class="fas fa-map-marker-alt"></i> Localizador de Sucursales
+                                    </div>
+
+                                    <h5><i class="fas fa-user-circle"></i> Fidelización</h5>
+                                    <div class="template-item" onclick="applyFlowTemplate('programaLealtad')">
+                                        <i class="fas fa-award"></i> Programa de Lealtad
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('encuestaSatisfaccion')">
+                                        <i class="fas fa-smile"></i> Encuestas de Satisfacción
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('encuestasOpinion')">
+                                        <i class="fas fa-poll"></i> Encuestas de Opinión
+                                    </div>
+
+                                    <h5><i class="fas fa-cogs"></i> Administración</h5>
+                                    <div class="template-item" onclick="applyFlowTemplate('administracionUsuarios')">
+                                        <i class="fas fa-user-cog"></i> Administración de Usuarios
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('chatboEducativo')">
+                                        <i class="fas fa-graduation-cap"></i> Chatbot Educativo
+                                    </div>
+                                    <div class="template-item" onclick="applyFlowTemplate('tutorialOnboarding')">
+                                        <i class="fas fa-chalkboard-teacher"></i> Tutorial y Onboarding
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel central: Editor de flujo -->
+                            <div class="flow-editor" id="flowEditor">
+                                <div class="flow-editor-placeholder" id="flowEditorPlaceholder">
+                                    <i class="fas fa-code-branch fa-3x"></i>
+                                    <h4>Editor de Flujos</h4>
+                                    <p>Selecciona un flujo existente o crea uno nuevo para comenzar a editarlo</p>
+                                    <button class="btn btn-primary" onclick="addNewFlow()">
+                                        <i class="fas fa-plus"></i> Crear Nuevo Flujo
+                                    </button>
+                                </div>
+
+                                <!-- Área de edición del flujo actual -->
+                                <div class="flow-edit-container" id="flowEditContainer" style="display: none;">
+                                    <!-- Cabecera del editor -->
+                                    <div class="flow-edit-header">
+                                        <div class="flow-title-area">
+                                            <input type="text" class="form-control" id="flowName"
+                                                placeholder="Nombre del flujo">
+                                            <div class="flow-status">
+                                                <span class="status-indicator status-enabled">
+                                                    <span class="status-dot"></span> Activo
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="flow-actions">
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="previewFlow()">
+                                                <i class="fas fa-eye"></i> Vista Previa
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                onclick="duplicateCurrentFlow()">
+                                                <i class="fas fa-copy"></i> Duplicar
+                                            </button>
+                                            <button class="btn btn-success btn-sm" onclick="saveCurrentFlow()">
+                                                <i class="fas fa-save"></i> Guardar
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning"
+                                                onclick="toggleCurrentFlowStatus()">
+                                                <i class="fas fa-pause"></i> Desactivar
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCurrentFlow()">
+                                                <i class="fas fa-trash"></i> Eliminar Flujo
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Descripción del flujo -->
+                                    <div class="flow-description">
+                                        <textarea class="form-control" id="flowDescription"
+                                            placeholder="Descripción del flujo (opcional)"></textarea>
+                                    </div>
+
+                                    <!-- Pestañas del editor -->
+                                    <div class="flow-edit-tabs">
+                                        <div class="tab-button active" data-tab="diagram">Diagrama</div>
+                                        <div class="tab-button" data-tab="steps">Pasos</div>
+                                        <div class="tab-button" data-tab="options">Opciones</div>
+                                        <div class="tab-button" data-tab="messages">Mensajes</div>
+                                        <div class="tab-button" data-tab="code">Código</div>
+                                    </div>
+
+
+                                    <!-- Contenido de las pestañas -->
+                                    <div class="flow-tab-content">
+                                        <!-- Pestaña de diagrama -->
+                                        <div class="tab-pane active" id="flowDiagramTab">
+                                            <div class="flow-diagram-container">
+                                                <div class="flow-diagram" id="flowDiagramCanvas">
+                                                </div>
+
+                                            </div>
+                                            <div class="flow-diagram-toolbar">
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="zoomInFlow()">
+                                                    <i class="fas fa-search-plus"></i> Zoom In
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                    onclick="zoomOutFlow()">
+                                                    <i class="fas fa-search-minus"></i> Zoom Out
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                    onclick="resetFlowZoom()">
+                                                    <i class="fas fa-sync"></i> Reset Zoom
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                    onclick="saveFlowAsPNG()">
+                                                    <i class="fas fa-download"></i> Guardar PNG
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                    onclick="toggleProperties()">
+                                                    <i class="fas fa-sliders-h"></i> Propiedades
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Pestaña de pasos -->
+                                        <div class="tab-pane" id="flowStepsTab">
+                                            <div class="flow-steps-container">
+                                                <div class="flow-steps-header">
+                                                    <h5><i class="fas fa-code-branch"></i> Pasos del Flujo</h5>
+                                                    <button class="btn btn-sm btn-primary" onclick="addFlowStep()">
+                                                        <i class="fas fa-plus"></i> Agregar Paso
+                                                    </button>
+                                                </div>
+
+                                                <div class="flow-steps-content">
+                                                    <!-- Panel izquierdo: Lista de pasos -->
+                                                    <div class="flow-steps-list-panel">
+                                                        <div class="panel-header">
+                                                            <h6>Pasos Disponibles</h6>
+                                                            <span class="step-count" id="stepsCount">0 pasos</span>
+                                                        </div>
+
+                                                        <!-- Aquí se mostrarán los pasos -->
+                                                        <div class="flow-steps-list" id="flowStepsList">
+                                                            <!-- Los pasos se cargarán dinámicamente aquí -->
+                                                            <div class="empty-state" style="display: none;">
+                                                                <p>No hay pasos definidos para este flujo</p>
+                                                                <button class="btn btn-sm btn-primary"
+                                                                    onclick="addDefaultSteps()">
+                                                                    <i class="fas fa-plus"></i> Añadir Pasos
+                                                                    Predeterminados
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Panel derecho: Editor de paso -->
+                                                    <div class="flow-step-editor" id="flowStepEditor">
+                                                        <!-- Placeholder cuando no hay paso seleccionado -->
+                                                        <div class="step-editor-placeholder" id="stepEditorPlaceholder">
+                                                            <div class="placeholder-icon">
+                                                                <i class="fas fa-code-branch"></i>
+                                                            </div>
+                                                            <p>Selecciona un paso para editarlo o crea uno nuevo</p>
+                                                            <button class="btn btn-sm btn-outline-primary"
+                                                                onclick="addFlowStep()">
+                                                                <i class="fas fa-plus"></i> Crear Nuevo Paso
+                                                            </button>
+                                                        </div>
+
+                                                        <!-- Formulario de edición de paso -->
+                                                        <div class="step-edit-form" id="stepEditForm"
+                                                            style="display: none;">
+                                                            <div class="form-header">
+                                                                <h5>Editar Paso: <span
+                                                                        id="currentStepName">INITIAL</span></h5>
+                                                                <div class="step-type-badge" id="stepTypeBadge">Paso
+                                                                    Inicial</div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label>Nombre del Paso <span
+                                                                        class="required">*</span></label>
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span class="input-group-text"><i
+                                                                                class="fas fa-tag"></i></span>
+                                                                    </div>
+                                                                    <input type="text" class="form-control"
+                                                                        id="stepName"
+                                                                        placeholder="Ej: INITIAL, AWAITING_CHOICE"
+                                                                        required>
+                                                                </div>
+                                                                <small class="form-text text-muted">Usar formato
+                                                                    MAYÚSCULAS_CON_GUIONES</small>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label>Mensaje a Mostrar</label>
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span class="input-group-text"><i
+                                                                                class="fas fa-comment"></i></span>
+                                                                    </div>
+                                                                    <textarea class="form-control" id="stepMessage"
+                                                                        rows="4"
+                                                                        placeholder="Mensaje que se enviará al usuario en este paso"></textarea>
+                                                                </div>
+                                                                <small class="form-text text-muted">Puedes usar
+                                                                    variables como {{nombre}}</small>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label>Siguiente Paso</label>
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span class="input-group-text"><i
+                                                                                class="fas fa-arrow-right"></i></span>
+                                                                    </div>
+                                                                    <select class="form-control" id="stepNextStep">
+                                                                        <option value="">Seleccionar siguiente paso
+                                                                        </option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label>Condición (opcional)</label>
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span class="input-group-text"><i
+                                                                                class="fas fa-code"></i></span>
+                                                                    </div>
+                                                                    <input type="text" class="form-control"
+                                                                        id="stepCondition"
+                                                                        placeholder="Condición para avanzar al siguiente paso">
+                                                                </div>
+                                                                <small class="form-text text-muted">Ej: input === 'SI'
+                                                                    || input === '1'</small>
+                                                            </div>
+
+                                                            <div class="step-actions">
+                                                                <button class="btn btn-sm btn-secondary"
+                                                                    onclick="cancelStepEdit()">
+                                                                    <i class="fas fa-times"></i> Cancelar
+                                                                </button>
+                                                                <button class="btn btn-sm btn-danger"
+                                                                    onclick="deleteCurrentStep()">
+                                                                    <i class="fas fa-trash"></i> Eliminar
+                                                                </button>
+                                                                <button class="btn btn-sm btn-success"
+                                                                    onclick="saveStepChanges()">
+                                                                    <i class="fas fa-save"></i> Guardar Cambios
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Pestaña de opciones -->
+                                        <div class="tab-pane" id="flowOptionsTab">
+                                            <div class="flow-options-container">
+                                                <div class="flow-options-header">
+                                                    <h5>Opciones del Menú</h5>
+                                                    <button class="btn btn-sm btn-primary" onclick="addFlowOption()">
+                                                        <i class="fas fa-plus"></i> Agregar Opción
+                                                    </button>
+                                                </div>
+                                                <div class="flow-options-list" id="flowOptionsList">
+                                                    <!-- Opciones del flujo -->
+                                                </div>
+                                                <!-- Opción de edición como modal flotante -->
+                                                <div class="modal-overlay" id="optionEditModal" style="display: none;">
+                                                    <div class="modal-container">
+                                                        <div class="modal-header">
+                                                            <h5>Editar Opción: <span id="currentOptionNumber">1</span>
+                                                            </h5>
+                                                            <button type="button" class="modal-close"
+                                                                onclick="closeOptionEditModal()">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form id="optionEditForm">
+                                                                <div class="form-group">
+                                                                    <label>Número/Emoji</label>
+                                                                    <select class="form-control" id="optionEmoji">
+                                                                        <option value="1️⃣">1️⃣ Uno</option>
+                                                                        <option value="2️⃣">2️⃣ Dos</option>
+                                                                        <option value="3️⃣">3️⃣ Tres</option>
+                                                                        <option value="4️⃣">4️⃣ Cuatro</option>
+                                                                        <option value="5️⃣">5️⃣ Cinco</option>
+                                                                        <option value="6️⃣">6️⃣ Seis</option>
+                                                                        <option value="7️⃣">7️⃣ Siete</option>
+                                                                        <option value="8️⃣">8️⃣ Ocho</option>
+                                                                        <option value="9️⃣">9️⃣ Nueve</option>
+                                                                        <option value="🔍">🔍 Buscar</option>
+                                                                        <option value="📅">📅 Calendario</option>
+                                                                        <option value="📋">📋 Lista</option>
+                                                                        <option value="💰">💰 Precio</option>
+                                                                        <option value="📞">📞 Contacto</option>
+                                                                        <option value="⬅️">⬅️ Regresar</option>
+                                                                        <option value="🏠">🏠 Inicio</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Texto de la Opción</label>
+                                                                    <input type="text" class="form-control"
+                                                                        id="optionText" placeholder="Ej: Ver Servicios">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Pertenece al Paso</label>
+                                                                    <select class="form-control"
+                                                                        id="optionStepSelect"></select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Acción</label>
+                                                                    <select class="form-control" id="optionAction"
+                                                                        onchange="showActionValueOptions()">
+                                                                        <option value="">Seleccionar acción</option>
+                                                                        <option value="goToStep">Ir a otro paso</option>
+                                                                        <option value="goToFlow">Ir a otro flujo
+                                                                        </option>
+                                                                        <option value="sendMessage">Enviar mensaje
+                                                                        </option>
+                                                                        <option value="sendMedia">Enviar multimedia
+                                                                        </option>
+                                                                        <option value="callAPI">Llamar API</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group" id="optionActionValueContainer">
+                                                                    <label>Valor de la Acción</label>
+                                                                    <input type="text" class="form-control"
+                                                                        id="optionActionValue"
+                                                                        placeholder="Ej: MENU_SERVICIOS">
+                                                                </div>
+
+                                                                <!-- Vista previa de la opción -->
+                                                                <div class="option-preview">
+                                                                    <label>Vista Previa</label>
+                                                                    <div class="option-preview-bubble">
+                                                                        <span class="option-preview-emoji"
+                                                                            id="previewEmoji">1️⃣</span>
+                                                                        <span class="option-preview-text"
+                                                                            id="previewText">Texto de ejemplo</span>
+                                                                    </div>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button class="btn btn-secondary"
+                                                                onclick="closeOptionEditModal()">
+                                                                <i class="fas fa-times"></i> Cancelar
+                                                            </button>
+                                                            <button class="btn btn-danger"
+                                                                onclick="deleteCurrentOption()">
+                                                                <i class="fas fa-trash"></i> Eliminar
+                                                            </button>
+                                                            <button class="btn btn-success"
+                                                                onclick="saveOptionChanges()">
+                                                                <i class="fas fa-save"></i> Guardar Cambios
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Pestaña de mensajes -->
+                                        <div class="tab-pane" id="flowMessagesTab">
+                                            <div class="flow-messages-container">
+                                                <div class="flow-messages-header">
+                                                    <h5>Mensajes del Flujo</h5>
+                                                    <button class="btn btn-sm btn-primary" onclick="addFlowMessage()">
+                                                        <i class="fas fa-plus"></i> Agregar Mensaje
+                                                    </button>
+                                                </div>
+                                                <div class="flow-messages-list" id="flowMessagesList">
+                                                    <!-- Mensajes del flujo -->
+                                                </div>
+                                                <!-- Modal para editar mensajes -->
+                                                <div class="modal-overlay" id="messageEditModal" style="display: none;">
+                                                    <div class="modal-container message-modal">
+                                                        <div class="modal-header">
+                                                            <h5>Editar Mensaje: <span
+                                                                    id="currentMessageKey">welcome</span></h5>
+                                                            <button type="button" class="modal-close"
+                                                                onclick="closeMessageEditModal()">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form id="messageEditForm">
+                                                                <!-- Configuración básica -->
+                                                                <div class="form-row">
+                                                                    <div class="form-group col-md-6">
+                                                                        <label>Clave del Mensaje <span
+                                                                                class="required">*</span></label>
+                                                                        <input type="text" class="form-control"
+                                                                            id="messageKey"
+                                                                            placeholder="Ej: welcome, error, success"
+                                                                            required>
+                                                                    </div>
+                                                                    <div class="form-group col-md-6">
+                                                                        <label>Tipo de Mensaje <span
+                                                                                class="required">*</span></label>
+                                                                        <select class="form-control" id="messageType"
+                                                                            onchange="changeMessageType()">
+                                                                            <option value="text">📝 Texto</option>
+                                                                            <option value="ia">🤖 Inteligencia
+                                                                                Artificial</option>
+                                                                            <option value="image">🖼️ Imagen</option>
+                                                                            <option value="video">🎥 Video</option>
+                                                                            <option value="audio">🎵 Audio</option>
+                                                                            <option value="document">📄 Documento
+                                                                            </option>
+                                                                            <option value="location">📍 Ubicación
+                                                                            </option>
+                                                                            <option value="contact">👤 Contacto</option>
+                                                                            <option value="buttons">🔘 Botones
+                                                                                Interactivos</option>
+                                                                            <option value="list">📋 Lista de Opciones
+                                                                            </option>
+                                                                            <option value="template">🎨 Plantilla
+                                                                            </option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Contenido principal -->
+                                                                <div class="form-group">
+                                                                    <label>Contenido del Mensaje <span
+                                                                            class="required">*</span></label>
+                                                                    <div class="message-content-editor">
+                                                                        <textarea class="form-control"
+                                                                            id="messageContent" rows="6"
+                                                                            placeholder="Contenido del mensaje. Usa {{variable}} para variables dinámicas"></textarea>
+                                                                        <div class="content-tools">
+                                                                            <div class="content-tool-buttons">
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                                    onclick="insertEmoji()">
+                                                                                    <i class="fas fa-smile"></i> Emoji
+                                                                                </button>
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                                    onclick="insertVariable()">
+                                                                                    <i class="fas fa-code"></i> Variable
+                                                                                </button>
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                                    onclick="formatText('**', '**')">
+                                                                                    <i class="fas fa-bold"></i>
+                                                                                </button>
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                                    onclick="formatText('_', '_')">
+                                                                                    <i class="fas fa-italic"></i>
+                                                                                </button>
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                                    onclick="formatText('~', '~')">
+                                                                                    <i class="fas fa-strikethrough"></i>
+                                                                                </button>
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-secondary"
+                                                                                    onclick="formatText('\n- ', '')">
+                                                                                    <i class="fas fa-list"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                            <span class="char-counter"
+                                                                                id="charCounter">0/4096</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Campos específicos por tipo -->
+                                                                <div id="messageTypeFields">
+                                                                    <!-- Se cargan dinámicamente según el tipo -->
+                                                                </div>
+
+                                                                <!-- Variables disponibles -->
+                                                                <div class="available-variables">
+                                                                    <label>Variables Disponibles</label>
+                                                                    <div class="variables-list">
+                                                                        <span class="variable-tag"
+                                                                            onclick="insertText('{{nombre}}')">{{nombre}}</span>
+                                                                        <span class="variable-tag"
+                                                                            onclick="insertText('{{fecha}}')">{{fecha}}</span>
+                                                                        <span class="variable-tag"
+                                                                            onclick="insertText('{{hora}}')">{{hora}}</span>
+                                                                        <span class="variable-tag"
+                                                                            onclick="insertText('{{empresa}}')">{{empresa}}</span>
+                                                                        <span class="variable-tag"
+                                                                            onclick="insertText('{{folio}}')">{{folio}}</span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Vista previa -->
+                                                                <div class="message-preview-container"
+                                                                    id="messagePreview">
+                                                                    <label>Vista Previa</label>
+                                                                    <div class="message-preview">
+                                                                        <div class="chat-bubble bot" id="previewBubble">
+                                                                            <!-- Vista previa del mensaje -->
+                                                                        </div>
+                                                                    </div>
+                                                                    <div id="previewKeywords"
+                                                                        class="preview-keywords-container"
+                                                                        style="display: none;"></div>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button class="btn btn-secondary"
+                                                                onclick="closeMessageEditModal()">
+                                                                <i class="fas fa-times"></i> Cancelar
+                                                            </button>
+                                                            <button class="btn btn-danger"
+                                                                onclick="deleteCurrentMessage()">
+                                                                <i class="fas fa-trash"></i> Eliminar
+                                                            </button>
+                                                            <button class="btn btn-success"
+                                                                onclick="saveMessageChanges()">
+                                                                <i class="fas fa-save"></i> Guardar Cambios
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Pestaña de código -->
+                                        <div class="tab-pane" id="flowCodeTab">
+                                            <div class="flow-code-container">
+                                                <div class="flow-code-header">
+                                                    <h5>Código Generado</h5>
+                                                    <button class="btn btn-sm btn-outline-secondary"
+                                                        onclick="copyFlowCode()" disabled>
+                                                        <i class="fas fa-copy"></i> Copiar Código
+                                                    </button>
+                                                </div>
+                                                <div class="flow-code-editor" aria-disabled="true" style="filter: blur(1.5px);">
+                                                    <pre><code class="javascript" id="flowGeneratedCode">// El código se generará automáticamente</code></pre>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel derecho: Propiedades -->
+                        <!--<div class="flow-properties" id="flowProperties">
+                            <div class="properties-header">
+                                <h4>Propiedades</h4>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleProperties()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="properties-content" id="propertiesContent">
+                                <div class="empty-state">
+                                    <i class="fas fa-sliders-h"></i>
+                                    <p>Selecciona un elemento para ver sus propiedades</p>
+                                </div>
+                            </div>
+                        </div>-->
+                    </div>
+
+                    <!-- Vista previa del flujo -->
+                    <div class="flow-preview" id="flowPreview" style="display: none;">
+                        <div class="preview-header">
+                            <h4>Vista Previa: <span id="previewFlowName">Nombre del Flujo</span></h4>
+                            <button class="btn btn-outline-secondary" onclick="closePreview()">
+                                <i class="fas fa-times"></i> Cerrar
+                            </button>
+                        </div>
+                        <div class="preview-container">
+                            <div class="phone-mockup">
+                                <div class="phone-header">
+                                    <div class="phone-contact">
+                                        <div class="contact-avatar">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <div class="contact-info">
+                                            <div class="contact-name" id="previewBotName">Bot de WhatsApp</div>
+                                            <div class="contact-status">En línea</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="phone-chat" id="previewChat">
+                                    <!-- Los mensajes de chat se generarán aquí -->
+                                </div>
+                                <div class="phone-input">
+                                    <input type="text" placeholder="Escribe un mensaje" id="previewUserInput">
+                                    <button onclick="sendPreviewMessage()">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="preview-info">
+                                <div class="preview-step">
+                                    <h5>Paso Actual</h5>
+                                    <div class="preview-step-value" id="previewCurrentStep">INITIAL</div>
+                                </div>
+                                <div class="preview-variables">
+                                    <h5>Variables</h5>
+                                    <div class="preview-variables-list" id="previewVariables">
+                                        <!-- Variables se mostrarán aquí -->
+                                    </div>
+                                </div>
+                                <div class="preview-actions">
+                                    <button class="btn btn-secondary" onclick="resetPreview()">
+                                        <i class="fas fa-sync"></i> Reiniciar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Constructor de Menús -->
+                <div id="menus" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-mobile-alt"></i> Constructor de Menús Interactivos</h3>
+
+                        <div class="tab-buttons">
+                            <div class="tab-button active" onclick="switchMenuTab('builder')">Constructor</div>
+                            <div class="tab-button" onclick="switchMenuTab('preview')">Vista Previa</div>
+                            <div class="tab-button" onclick="switchMenuTab('code')">Código</div>
+                        </div>
+
+                        <div id="menu-builder" class="tab-content active">
+                            <div class="grid-2">
+                                <div>
+                                    <h4>Configuración del Menú</h4>
+                                    <div class="form-group">
+                                        <label>Nombre del Menú</label>
+                                        <input type="text" class="form-control" id="menuBuilderName"
+                                            value="MENU_PRINCIPAL">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mensaje de Bienvenida</label>
+                                        <textarea class="form-control" id="menuBuilderMessage"
+                                            rows="3">¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?</textarea>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4>Opciones del Menú</h4>
+                                    <div id="menuBuilderOptions">
+                                        <div class="menu-option"
+                                            style="border: 1px solid #e9ecef; padding: 10px; margin: 5px 0; border-radius: 8px;">
+                                            <div
+                                                style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span>1️⃣ Ver Servicios</span>
+                                                <button class="btn btn-danger" onclick="removeMenuOption(this)">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            <input type="text" class="form-control" value="Ver Servicios"
+                                                placeholder="Texto de la opción">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="addMenuOption()">
+                                        <i class="fas fa-plus"></i> Agregar Opción
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="menu-preview" class="tab-content" style="display: none;">
+                            <div
+                                style="background: #f8f9fa; padding: 20px; border-radius: 10px; max-width: 400px; margin: 0 auto;">
+                                <div
+                                    style="background: #25D366; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                                    <div id="menuPreviewMessage">¡Hola! Soy tu asistente virtual. ¿En qué puedo
+                                        ayudarte
+                                        hoy?</div>
+                                </div>
+                                <div id="menuPreviewOptions">
+                                    <div
+                                        style="background: white; padding: 10px; margin: 5px 0; border-radius: 8px; border-left: 4px solid #25D366;">
+                                        1️⃣ Ver Servicios
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="menu-code" class="tab-content" style="display: none;">
+                            <div class="code-preview" id="menuGeneratedCode">
+                                // El código se generará automáticamente
+                            </div>
+                            <button class="btn btn-primary" onclick="copyMenuCode()">
+                                <i class="fas fa-copy"></i> Copiar Código
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración de APIs -->
+                <div id="apis" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-plug"></i> Configuración de APIs</h3>
+
+                        <div class="grid-2">
+                            <div>
+                                <h4>APIs del Sistema</h4>
+                                <div class="form-group">
+                                    <label>API de Folios</label>
+                                    <input type="url" class="form-control" id="apiConfigFolio"
+                                        placeholder="https://tuempresa.com/api/folio.php">
+                                </div>
+                                <div class="form-group">
+                                    <label>API de Servicios</label>
+                                    <input type="url" class="form-control" id="apiConfigServicios"
+                                        placeholder="https://tuempresa.com/api/servicios.php">
+                                </div>
+                                <div class="form-group">
+                                    <label>API de Garantías</label>
+                                    <input type="url" class="form-control" id="apiConfigGarantias"
+                                        placeholder="https://tuempresa.com/api/garantias.php">
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4>Configuración Avanzada</h4>
+                                <div class="form-group">
+                                    <label>Timeout de API (segundos)</label>
+                                    <input type="number" class="form-control" id="apiConfigTimeout" value="30" min="5"
+                                        max="120">
+                                </div>
+                                <div class="form-group">
+                                    <label>Reintentos en caso de error</label>
+                                    <input type="number" class="form-control" id="apiConfigRetries" value="3" min="1"
+                                        max="10">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contraseña de API</label>
+                                    <input type="password" class="form-control" id="apiConfigPassword"
+                                        placeholder="Token de seguridad">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="testAllApis()">
+                                <i class="fas fa-vial"></i> Probar APIs
+                            </button>
+                            <button class="btn btn-success" onclick="saveApiConfig()">
+                                <i class="fas fa-save"></i> Guardar Configuración
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración de IA -->
+                <div id="ai-config" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-brain"></i> Configuración de IA y Gemini</h3>
+
+                        <div class="grid-2">
+                            <div>
+                                <h4>Configuración de Gemini</h4>
+                                <div class="form-group">
+                                    <label>Google API Key</label>
+                                    <input type="password" class="form-control" id="aiConfigGeminiKey"
+                                        placeholder="Tu API Key de Google">
+                                </div>
+                                <div class="form-group">
+                                    <label>Modelo a Usar</label>
+                                    <select class="form-control" id="aiConfigModel">
+                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recomendado)</option>
+                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                        <option value="gemini-pro">Gemini Pro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4>Configuración del Comportamiento</h4>
+                                <div class="form-group">
+                                    <label>Nombre del Asistente</label>
+                                    <input type="text" class="form-control" id="aiConfigBotName" value="Jbot"
+                                        placeholder="Nombre del bot">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tono de Conversación</label>
+                                    <select class="form-control" id="aiConfigTone">
+                                        <option value="amigable">Amigable y Casual</option>
+                                        <option value="profesional">Profesional</option>
+                                        <option value="formal">Formal</option>
+                                        <option value="entusiasta">Entusiasta</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Prompt del Sistema</label>
+                            <textarea class="form-control" id="aiConfigSystemPrompt" rows="5"
+                                placeholder="Define cómo debe comportarse tu bot...">Eres un asistente virtual especializado en ayudar a los clientes. Mantén un tono profesional pero cálido, y siempre trata de ser útil y eficiente.</textarea>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="testAI()">
+                                <i class="fas fa-vial"></i> Probar IA
+                            </button>
+                            <button class="btn btn-success" onclick="saveAIConfig()">
+                                <i class="fas fa-save"></i> Guardar Configuración
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensajes Personalizados -->
+                <div id="messages" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-comments"></i> Biblioteca de Mensajes Personalizados</h3>
+
+                        <div class="tab-buttons">
+                            <div class="tab-button active" onclick="switchMessageTab('greetings')">Saludos</div>
+                            <div class="tab-button" onclick="switchMessageTab('errors')">Errores</div>
+                            <div class="tab-button" onclick="switchMessageTab('confirmations')">Confirmaciones</div>
+                        </div>
+
+                        <div id="messages-greetings" class="tab-content active">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Saludo Matutino (6:00 - 12:00)</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgMorningGreeting">¡Buenos días! 🌅 ¿Cómo puedo ayudarte hoy?</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Saludo Vespertino (12:00 - 18:00)</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgAfternoonGreeting">¡Buenas tardes! 🌞 ¿En qué puedo asistirte?</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Saludo Nocturno (18:00 - 6:00)</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgEveningGreeting">¡Buenas noches! 🌙 ¿Cómo puedo ayudarte?</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Mensaje de Usuario Nuevo</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgNewUser">¡Hola! Veo que es tu primera vez aquí. Te explico brevemente cómo funciono...</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="messages-errors" class="tab-content" style="display: none;">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Opción No Válida</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgInvalidOption">❌ Opción no válida. Por favor, selecciona una opción del menú.</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Error de API</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgApiError">😔 Ups, algo salió mal. Por favor, intenta de nuevo en unos momentos.</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fuera de Horario</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgOutsideHours">🕐 Estamos fuera de horario de atención.</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Usuario Pausado</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgUserPaused">⏸️ El asistente está pausado. Escribe 'reactivar' para continuar.</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="messages-confirmations" class="tab-content" style="display: none;">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Datos Guardados</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgDataSaved">✅ Información guardada correctamente.</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Proceso Completado</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgProcessComplete">🎉 ¡Proceso completado exitosamente!</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Esperando Respuesta</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgWaitingResponse">⏳ Procesando tu solicitud, por favor espera...</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Despedida</label>
+                                    <textarea class="form-control" rows="3"
+                                        id="msgGoodbye">👋 ¡Gracias por contactarnos! Que tengas un excelente día.</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-success" onclick="saveMessages()">
+                            <i class="fas fa-save"></i> Guardar Mensajes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analíticas -->
+                <div id="analytics" class="section" style="filter: blur(25px);">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="analyticsMessages">0</div>
+                            <div class="stat-label">Mensajes Totales</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="analyticsUsers">0</div>
+                            <div class="stat-label">Usuarios Únicos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="analyticsResponse">0%</div>
+                            <div class="stat-label">Tasa de Respuesta</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="analyticsAvgTime">0</div>
+                            <div class="stat-label">Tiempo Promedio</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3><i class="fas fa-chart-line"></i> Gráficos de Actividad</h3>
+                        <div
+                            style="height: 300px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <div style="text-align: center;">
+                                <i class="fas fa-chart-bar"
+                                    style="font-size: 48px; color: #6c757d; margin-bottom: 10px;"></i>
+                                <p style="color: #6c757d;">Los gráficos de analíticas aparecerán aquí</p>
+                                <button class="btn btn-primary" onclick="loadAnalyticsData()">
+                                    <i class="fas fa-sync"></i> Cargar Datos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestión de Usuarios -->
+                <div id="users" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-users"></i> Gestión de Usuarios Activos</h3>
+                        <div style="margin-bottom: 20px;">
+                            <input type="text" class="form-control" id="userSearch" placeholder="Buscar usuario..."
+                                style="width: 300px; display: inline-block; margin-right: 10px;">
+                            <button class="btn btn-primary" onclick="searchUsers()">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            <button class="btn btn-secondary" onclick="refreshUsers()">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                        </div>
+
+                        <div id="usersList">
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <h4>No hay usuarios activos</h4>
+                                <p>Los usuarios aparecerán aquí cuando interactúen con tus bots.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs del Sistema -->
+                <div id="logs" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-clipboard-list"></i> Logs del Sistema</h3>
+                        <div style="margin-bottom: 20px;">
+                            <select class="form-control" id="logLevel"
+                                style="width: 150px; display: inline-block; margin-right: 10px;">
+                                <option value="">Todos los niveles</option>
+                                <option value="ERROR">Error</option>
+                                <option value="WARN">Warning</option>
+                                <option value="INFO">Info</option>
+                                <option value="DEBUG">Debug</option>
+                            </select>
+                            <select class="form-control" id="logBot"
+                                style="width: 200px; display: inline-block; margin-right: 10px;">
+                                <option value="">Todos los bots</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="refreshLogs()">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                            <button class="btn btn-warning" onclick="clearLogs()">
+                                <i class="fas fa-trash"></i> Limpiar
+                            </button>
+                        </div>
+
+                        <div style="background: #1e1e1e; color: #00ff00; padding: 20px; border-radius: 10px; height: 400px; overflow-y: auto; font-family: 'Courier New', monospace;"
+                            id="logsContainer">
+                            <div style="color: #00ff00;">Sistema de logs cargado correctamente...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generador de Código -->
+                <div id="code-generator" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-code"></i> Generador de Código</h3>
+                        <div style="margin-bottom: 20px;">
+                            <select class="form-control" id="codeGeneratorBot"
+                                style="width: 300px; display: inline-block; margin-right: 10px;">
+                                <option value="">Selecciona un bot</option>
+                            </select>
+                            <button class="btn btn-success" onclick="generateBotCode()">
+                                <i class="fas fa-cogs"></i> Generar Código
+                            </button>
+                            <button class="btn btn-secondary" onclick="downloadBotCode()">
+                                <i class="fas fa-download"></i> Descargar
+                            </button>
+                        </div>
+
+                        <div class="tab-buttons">
+                            <div class="tab-button active" onclick="switchCodeTab('main')">app.js</div>
+                            <div class="tab-button" onclick="switchCodeTab('package')">package.json</div>
+                            <div class="tab-button" onclick="switchCodeTab('env')">env</div>
+                        </div>
+
+                        <div id="code-main" class="tab-content active">
+                            <div class="code-preview" id="mainCodeContent">
+                                // Selecciona un bot para generar su código
+                            </div>
+                        </div>
+
+                        <div id="code-package" class="tab-content" style="display: none;">
+                            <div class="code-preview" id="packageCodeContent">
+                                // package.json se generará aquí
+                            </div>
+                        </div>
+
+                        <div id="code-env" class="tab-content" style="display: none;">
+                            <div class="code-preview" id="envCodeContent">
+                                // Variables de entorno se generarán aquí
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sistema de Despliegue -->
+                <div id="deploy" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-rocket"></i> Sistema de Despliegue</h3>
+
+                        <div class="grid-2">
+                            <div>
+                                <h4>Configuración de Despliegue</h4>
+                                <div class="form-group">
+                                    <label>Servidor de Destino</label>
+                                    <select class="form-control" id="deployServer">
+                                        <option value="local">Servidor Local</option>
+                                        <option value="production">Servidor de Producción</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Modo de Despliegue</label>
+                                    <select class="form-control" id="deployMode">
+                                        <option value="development">Desarrollo</option>
+                                        <option value="production">Producción</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4>Estado del Sistema</h4>
+                                <p><strong>Estado:</strong> <span class="status-indicator status-online"><span
+                                            class="status-dot"></span>Operativo</span></p>
+                                <p><strong>Bots Desplegados:</strong> <span id="deployedBots">0</span></p>
+                                <p><strong>Última actualización:</strong> <span id="lastDeployUpdate">Nunca</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-success" onclick="deployAllBots()">
+                                <i class="fas fa-rocket"></i> Desplegar Todos
+                            </button>
+                            <button class="btn btn-warning" onclick="restartAllBots()">
+                                <i class="fas fa-sync"></i> Reiniciar Todos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sistema de Respaldos -->
+                <div id="backup" class="section" style="filter: blur(25px);">
+                    <div class="card">
+                        <h3><i class="fas fa-save"></i> Sistema de Respaldos</h3>
+
+                        <div class="grid-2">
+                            <div>
+                                <h4>Crear Respaldo</h4>
+                                <div class="form-group">
+                                    <label>Nombre del Respaldo</label>
+                                    <input type="text" class="form-control" id="backupName"
+                                        placeholder="Respaldo_YYYY-MM-DD">
+                                </div>
+                                <div class="form-group">
+                                    <label>Incluir:</label>
+                                    <div>
+                                        <label><input type="checkbox" checked> Configuración de bots</label><br>
+                                        <label><input type="checkbox" checked> Flujos conversacionales</label><br>
+                                        <label><input type="checkbox"> Logs del sistema</label><br>
+                                        <label><input type="checkbox"> Base de datos</label>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" onclick="createBackup()">
+                                    <i class="fas fa-save"></i> Crear Respaldo
+                                </button>
+                            </div>
+
+                            <div>
+                                <h4>Respaldos Recientes</h4>
+                                <div id="backupsList">
+                                    <div class="empty-state">
+                                        <i class="fas fa-save"></i>
+                                        <h4>No hay respaldos</h4>
+                                        <p>Crea tu primer respaldo para proteger tu configuración.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Notificaciones -->
+    <div id="notification" class="notification"></div>
+
+
+    <script src="js/index.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api-interceptor.js"></script>
+    <script src="/js/modals.js"></script>
+    <script src="https://unpkg.com/qrcode-js@1.0.0/qrcode.min.js"></script>
+    <!--<script src="/js/ai-config.js"></script>-->
+    <!--<script src="/js/ia-flows.js"></script>-->
+    <script src="/js/plantillas-flows.js"></script>
+    <script src="/js/mensajes-flows.js"></script>
+    <script src="/js/flows.js"></script>
+    <script src="/js/menus.js"></script>
+    <script src="/js/apis.js"></script>
+
+    <script src="/js/messages.js"></script>
+    <script src="/js/qr-log.js"></script>
+    <script>
+        // Crear evento personalizado para notificar cambios de sección
+        function notifySectionChange(sectionId) {
+            // Crear evento personalizado
+            const event = new CustomEvent('sectionChanged', {
+                detail: { section: sectionId }
+            });
+
+            // Disparar evento
+            document.dispatchEvent(event);
+
+            console.log(`Sección cambiada a: ${sectionId}`);
+        }
+
+        // Mejorar la función showSection para notificar cambios
+        const originalShowSection = window.showSection || function () { };
+        window.showSection = function (sectionId) {
+            // Llamar a la versión original
+            originalShowSection(sectionId);
+
+            // Notificar del cambio
+            notifySectionChange(sectionId);
+        };
+    </script>
+
+    <script>
+        document.querySelectorAll('a.nav-item[disabled]').forEach(function (a) {
+            a.addEventListener('click', function (e) {
+                e.preventDefault(); // Evita la acción por defecto
+                showNotification('Opciones en desarrollo', 'error');
+                return;
+
+            });
+        });
+
+    </script>
+</body>
+
+</html>

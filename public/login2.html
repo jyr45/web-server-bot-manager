@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - WhatsApp Bot Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+
+        .login-form {
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-info {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .login-form h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .login-form p {
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #25D366;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            cursor: pointer;
+        }
+
+        .password-toggle {
+            top: 65% !important;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3c3;
+            display: none;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .remember-me input {
+            margin-right: 10px;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .forgot-password a {
+            color: #25D366;
+            text-decoration: none;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .info-features {
+            list-style: none;
+            margin-top: 30px;
+        }
+
+        .info-features li {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-features li i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+
+            .login-info {
+                order: -1;
+                padding: 40px 20px;
+            }
+
+            .login-form {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-form">
+            <div class="logo">🤖</div>
+            <h1>Bienvenido</h1>
+            <p>Inicia sesión para acceder al panel de gestión de bots</p>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email o Usuario</label>
+                    <input type="text" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required>
+                    <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
+                </div>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    <label for="rememberMe">Recordar sesión</label>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="forgot-password">
+                <a href="#" onclick="showForgotPassword()">¿Olvidaste tu contraseña?</a>
+            </div>
+        </div>
+
+        <div class="login-info">
+            <h2 style="margin-bottom: 20px;">WhatsApp Bot Manager</h2>
+            <p style="margin-bottom: 30px;">Plataforma integral para la gestión de bots de mensajería empresariales</p>
+
+            <ul class="info-features">
+                <li><i class="fas fa-robot"></i> Gestión de múltiples bots</li>
+                <li><i class="fas fa-chart-line"></i> Analíticas en tiempo real</li>
+                <li><i class="fas fa-cog"></i> Configuración avanzada</li>
+                <li><i class="fas fa-shield-alt"></i> Seguridad empresarial</li>
+                <li><i class="fas fa-cloud"></i> Respaldos automáticos</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let loginAttempts = 0;
+        const maxAttempts = 50; // Máximo de intentos permitidos
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (loginAttempts >= maxAttempts) {
+                showError('Demasiados intentos fallidos. Espera 5 minutos.');
+                return;
+            }
+
+            const loginBtn = document.getElementById('loginBtn');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            if (!email || !password) {
+                showError('Por favor, completa todos los campos');
+                return;
+            }
+
+            // Mostrar loading
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<div class="loading"></div> Iniciando sesión...';
+
+            try {
+                // Especifica la URL completa del servidor
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        rememberMe
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar token
+                    const storage = rememberMe ? localStorage : sessionStorage;
+                    storage.setItem('authToken', data.token);
+                    storage.setItem('userData', JSON.stringify(data.user));
+
+                    showSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
+
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    loginAttempts++;
+                    showError(data.error || 'Error al iniciar sesión');
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                showError('Error de conexión. Verifica tu internet.');
+            } finally {
+                // Restaurar botón
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Iniciar Sesión';
+            }
+        });
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            successDiv.style.display = 'none';
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            errorDiv.style.display = 'none';
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        function showForgotPassword() {
+            alert('Contacta al administrador del sistema para restablecer tu contraseña.');
+        }
+
+        // Verificar si ya está logueado
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            if (token) {
+                // Verificar token válido
+                fetch('/api/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/';
+                        }
+                    })
+                    .catch(() => {
+                        // Token inválido, limpiar
+                        localStorage.removeItem('authToken');
+                        sessionStorage.removeItem('authToken');
+                    });
+            }
+        });
+
+        // Limitar intentos de login por tiempo
+        setTimeout(() => {
+            loginAttempts = 0;
+        }, 300000); // Reset después de 5 minutos
+    </script>
+</body>
+
+</html>

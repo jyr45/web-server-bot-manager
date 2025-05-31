@@ -1,0 +1,40 @@
+{
+  "name": "whatsapp-bot-bot_1748333311392_2rx2d7bxx",
+  "version": "1.0.0",
+  "description": "Bot de WhatsApp para bot - bot",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "automation",
+    "business"
+  ],
+  "author": "bot",
+  "license": "ISC",
+  "dependencies": {
+    "whatsapp-web.js": "^1.24.1",
+    "qrcode": "^1.5.3",
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.6.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "fs-extra": "^11.2.0",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "validator": "^13.11.0",
+    "moment": "^2.29.4",
+    "uuid": "^9.0.1",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
