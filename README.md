@@ -38,4 +38,30 @@ npm run deploy
 - Configuración: ./config.json
 - Variables de entorno: ./.env
 
+Libreria requerida para chromuin
+sudo apt update
+sudo apt install -y \
+    libnss3 \
+    libatk-bridge2.0-0t64 \
+    libatk1.0-0t64 \
+    libcups2t64 \
+    libdrm2 \
+    libxkbcommon0 \
+    libgbm1 \
+    libasound2t64 \
+    libpangocairo-1.0-0 \
+    libpango-1.0-0 \
+    libgtk-3-0t64 \
+    libxss1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libx11-xcb1 \
+    libxcb-dri3-0 \
+    libdbus-1-3 \
+    libxshmfence1 \
+    libxinerama1 \
+    libxcursor1
+
+
 Configurado el 26/5/2025, 9:00:14 p.m.
