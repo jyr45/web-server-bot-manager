@@ -97,7 +97,7 @@ const client = new Client({
             '--single-process',
             '--disable-gpu'
         ],
-        executablePath: '/usr/bin/chromium-browser', // Ruta a Chromium en sistemas Debian/Ubuntu
+        executablePath: '/home/web-server-bot-manager/node_modules/puppeteer-core/.local-chromium/linux-1045629/chrome-linux/chrome', // Ruta a Chromium, corroborada la ruta donde se encuentre instala puppeteer en la carpeta global de node_modules ya que es la primera instalacion puedes ser node_modules/puppeteer-core/ o node_modules/puppeteer/
         headless: true
     }
 });
