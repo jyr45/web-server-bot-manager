@@ -82,4 +82,40 @@ sudo apt-get install -y \
 sudo apt-get install chromium-browser
 ```
 
+## GENERACION DEL BOT EN CLIENTE PARA LINUX USANDO Chromium-browser
+```bash
+const client = new Client({
+    authStrategy: new LocalAuth({ clientId: BOT_ID }),
+    puppeteer: {
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+        ],
+        executablePath: '/usr/bin/chromium-browser', // Ruta a Chromium en sistemas Debian/Ubuntu
+        headless: true
+    }
+});
+```
+```bash
+snap install chromium
+```
+
+## GENERACION DEL BOT EN CLIENTE PARA OTROS SISTEMAS (USADO EN WINDOWS) USANDO puppeteer
+```bash
+// Configuración del cliente de WhatsApp
+const client = new Client({
+    authStrategy: new LocalAuth({ clientId: BOT_ID }),
+    puppeteer: {
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
+});
+```
+
+
 Configurado el 26/5/2025, 9:00:14 p.m.
