@@ -23,7 +23,7 @@ Un sistema completo de gestión de bots de WhatsApp con panel de control web, AP
 ### Clonar el repositorio
 
 ```bash
-git clone <tu-repositorio>
+git clone [<tu-repositorio>](https://github.com/jyr45/web-server-bot-manager.git)
 cd whatsapp-bot-manager
 npm install
 ```
