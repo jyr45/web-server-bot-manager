@@ -16,6 +16,11 @@ require('dotenv').config();
 //const generateBotFiles = require('./setup').generateBotFiles;
 //const db = require('./db');
 //const broadcastToClients = require('./ws').broadcastToClients;
+// VARIABLES DE CHROME
+//LINUX
+const chromiumPath = path.join(__dirname, '/home/obed/web-server-bot-manager/node_modules/puppeteer-core/.local-chromium/linux-1045629/chrome-linux/chrome');
+// WINDOWS
+//const chromiumPath = 'C:\\\\Users\\\\User\\\\Desktop\\\\serv-bot\\\\node_modules\\\\puppeteer-core\\\\.local-chromium\\\\win64-1045629\\\\chrome-win\\\\chrome.exe';
 
 // Importar módulo de base de datos
 const db = require('./db/mysql');
@@ -423,36 +428,36 @@ app.post('/api/generate-ai-message', async (req, res) => {
 app.post('/api/generate-ai-message', (req, res) => {
     try {
         const { apiKey, model, prompt, botName } = req.body;
-        
+
         // Limpiar la API key (eliminar caracteres no válidos que podrían venir de la base de datos)
         const cleanApiKey = apiKey ? apiKey.trim().replace(/\*+/g, '') : '';
-        
+
         // Validar que la API key parece válida (generalmente son cadenas alfanuméricas largas)
         if (!cleanApiKey || cleanApiKey.length < 10) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'La API Key proporcionada no es válida. Las API Keys de Google suelen ser cadenas alfanuméricas de al menos 10 caracteres.' 
+            return res.status(400).json({
+                success: false,
+                error: 'La API Key proporcionada no es válida. Las API Keys de Google suelen ser cadenas alfanuméricas de al menos 10 caracteres.'
             });
         }
-        
+
         // Verificar que al menos se ha proporcionado un prompt
         if (!prompt) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Se requiere un prompt para generar contenido' 
+            return res.status(400).json({
+                success: false,
+                error: 'Se requiere un prompt para generar contenido'
             });
         }
-        
+
         // Para pruebas iniciales o si estamos en modo offline
         const offlineMode = process.env.OFFLINE_AI_MODE === 'true';
-        
+
         // Registrar la petición para depuración
         console.log('Solicitud de generación con IA recibida:');
         console.log('- Modelo:', model || 'gemini-1.5-flash');
         console.log('- API Key (primeros 5 caracteres):', cleanApiKey.substring(0, 5) + '...');
         console.log('- Prompt (primeros 100 caracteres):', prompt.substring(0, 100) + (prompt.length > 100 ? '...' : ''));
         console.log('- Modo offline:', offlineMode ? 'Activado' : 'Desactivado');
-        
+
         // Si estamos en modo offline o para pruebas rápidas, generamos una respuesta local
         if (offlineMode) {
             generateOfflineResponse();
@@ -460,15 +465,15 @@ app.post('/api/generate-ai-message', (req, res) => {
             // Intentar llamar a la API real de Google
             callGeminiAPI();
         }
-        
+
         // Función para generar respuesta offline
         function generateOfflineResponse() {
             // Generar una respuesta basada en palabras clave en el prompt
             let respuesta = '';
-            
+
             if (prompt.toLowerCase().includes('saludo') || prompt.toLowerCase().includes('bienvenida')) {
                 respuesta = `¡Hola! Soy ${botName || 'un asistente virtual'} y estoy aquí para ayudarte. ¿En qué puedo asistirte hoy?`;
-            } 
+            }
             else if (prompt.toLowerCase().includes('gracias') || prompt.toLowerCase().includes('agradecimiento')) {
                 respuesta = '¡Ha sido un placer ayudarte! Si necesitas cualquier otra cosa, no dudes en preguntar.';
             }
@@ -481,22 +486,22 @@ app.post('/api/generate-ai-message', (req, res) => {
             else {
                 respuesta = `Gracias por tu mensaje. Como ${botName || 'asistente virtual'}, estoy aquí para ayudarte con cualquier pregunta o solicitud que tengas. ¿Hay algo específico en lo que pueda asistirte hoy?`;
             }
-            
+
             // Agregar un pequeño retraso para simular el procesamiento
             setTimeout(() => {
                 res.json({ success: true, response: respuesta });
             }, 1000);
         }
-        
+
         // Función para llamar a la API de Google Gemini
         async function callGeminiAPI() {
             try {
                 // Usar fetch nativo o importar node-fetch según la versión de Node.js
                 const fetch = require('node-fetch');
-                
+
                 // URL de la API de Google Gemini
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-1.5-flash'}:generateContent?key=${cleanApiKey}`;
-                
+
                 // Payload de la solicitud
                 const payload = {
                     contents: [{
@@ -526,7 +531,7 @@ app.post('/api/generate-ai-message', (req, res) => {
                         }
                     ]
                 };
-                
+
                 // Realizar la solicitud
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -535,36 +540,36 @@ app.post('/api/generate-ai-message', (req, res) => {
                     },
                     body: JSON.stringify(payload)
                 });
-                
+
                 // Verificar si la respuesta es exitosa
                 if (!response.ok) {
                     const errorData = await response.json();
                     console.error('Error de la API de Google:', errorData);
-                    
+
                     // Verificar si es un error de API key
                     if (response.status === 400 || response.status === 401) {
-                        return res.status(400).json({ 
-                            success: false, 
+                        return res.status(400).json({
+                            success: false,
                             error: 'La API Key proporcionada no es válida o ha expirado. Verifica tu API Key de Google.'
                         });
                     }
-                    
+
                     // Caer en modo fallback offline si la API falla
                     console.log('Fallando a modo offline debido a error de API');
                     return generateOfflineResponse();
                 }
-                
+
                 // Obtener respuesta
                 const data = await response.json();
-                
+
                 // Extraer el texto de la respuesta según la estructura de la API
                 let generatedText = '';
-                if (data.candidates && data.candidates.length > 0 && 
-                    data.candidates[0].content && 
-                    data.candidates[0].content.parts && 
+                if (data.candidates && data.candidates.length > 0 &&
+                    data.candidates[0].content &&
+                    data.candidates[0].content.parts &&
                     data.candidates[0].content.parts.length > 0) {
                     generatedText = data.candidates[0].content.parts[0].text || '';
-                    
+
                     res.json({ success: true, response: generatedText });
                 } else {
                     console.warn('Formato de respuesta inesperado de la API de Google:', data);
@@ -579,67 +584,67 @@ app.post('/api/generate-ai-message', (req, res) => {
         }
     } catch (error) {
         console.error('Error en el endpoint de IA:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error interno del servidor: ' + error.message 
+        res.status(500).json({
+            success: false,
+            error: 'Error interno del servidor: ' + error.message
         });
     }
 });
 
 app.get('/api/debug/bot/:id', async (req, res) => {
-  try {
-    // Verificar si está en modo desarrollo
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(403).json({
-        success: false,
-        error: 'Endpoint solo disponible en modo desarrollo'
-      });
-    }
+    try {
+        // Verificar si está en modo desarrollo
+        if (process.env.NODE_ENV !== 'development') {
+            return res.status(403).json({
+                success: false,
+                error: 'Endpoint solo disponible en modo desarrollo'
+            });
+        }
 
-    const botId = req.params.id;
-    
-    // Obtener el bot directamente de la base de datos
-    const db = require('../db/mysql'); // Ajusta la ruta según tu estructura
-    const [rawBot] = await db.query('SELECT * FROM bots WHERE id = ?', [botId]);
-    
-    if (!rawBot || rawBot.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Bot no encontrado'
-      });
+        const botId = req.params.id;
+
+        // Obtener el bot directamente de la base de datos
+        const db = require('../db/mysql'); // Ajusta la ruta según tu estructura
+        const [rawBot] = await db.query('SELECT * FROM bots WHERE id = ?', [botId]);
+
+        if (!rawBot || rawBot.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Bot no encontrado'
+            });
+        }
+
+        // Obtener los datos crudos incluyendo el tipo de cada campo
+        const botData = rawBot[0];
+        const fieldTypes = {};
+
+        // Analizar los tipos de cada campo
+        for (const [key, value] of Object.entries(botData)) {
+            fieldTypes[key] = {
+                value: value,
+                type: typeof value,
+                isBoolean: (value === 0 || value === 1) && key === 'enable_ai',
+                raw: String(value)
+            };
+        }
+
+        res.json({
+            success: true,
+            botRaw: botData,
+            fieldTypes,
+            enableAIStatus: {
+                value: botData.enable_ai,
+                asBoolean: Boolean(botData.enable_ai),
+                type: typeof botData.enable_ai
+            }
+        });
+    } catch (error) {
+        console.error('Error en endpoint de depuración:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
     }
-    
-    // Obtener los datos crudos incluyendo el tipo de cada campo
-    const botData = rawBot[0];
-    const fieldTypes = {};
-    
-    // Analizar los tipos de cada campo
-    for (const [key, value] of Object.entries(botData)) {
-      fieldTypes[key] = {
-        value: value,
-        type: typeof value,
-        isBoolean: (value === 0 || value === 1) && key === 'enable_ai',
-        raw: String(value)
-      };
-    }
-    
-    res.json({
-      success: true,
-      botRaw: botData,
-      fieldTypes,
-      enableAIStatus: {
-        value: botData.enable_ai,
-        asBoolean: Boolean(botData.enable_ai),
-        type: typeof botData.enable_ai
-      }
-    });
-  } catch (error) {
-    console.error('Error en endpoint de depuración:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
 });
 // Crear nuevo bot
 app.post('/api/bots/create', authenticateToken, validateBotConfig, async (req, res) => {
@@ -1783,7 +1788,7 @@ function installDependenciesWithTimeout(botDir, timeoutMs) {
     return new Promise((resolve, reject) => {
         const child = spawn(
             'npm',
-            ['install', 'whatsapp-web.js', 'qrcode-terminal', 'qrcode', 'axios', 'fs-extra', 'express', 'dotenv', 'puppeteer'],
+            ['install', 'whatsapp-web.js', 'qrcode-terminal', 'qrcode', 'axios', 'fs-extra', 'express', 'dotenv', 'puppeteer', 'validator'],
             { cwd: botDir, shell: true, stdio: 'inherit' }
         );
 
@@ -2337,6 +2342,7 @@ const MANAGEMENT_SERVER_URL = 'http://localhost:8080';
 const BOT_NAME = process.env.BOT_NAME || '${config.name}';
 const COMPANY_NAME = process.env.COMPANY_NAME || '${config.company}';
 const BOT_PLAN = process.env.PLAN || '${config.plan || 'emprendedor'}';
+let server; // Declare at the top level
 
 // Debug de variables críticas
 console.log('[CONFIG] Variables cargadas:');
@@ -2345,6 +2351,9 @@ console.log('- BOT_NAME:', BOT_NAME);
 console.log('- COMPANY_NAME:', COMPANY_NAME);
 console.log('- ADMIN_PERSONAL_NUMBER:', ADMIN_PERSONAL_NUMBER);
 console.log('- ENABLE_AI:', ENABLE_AI);
+
+//Variable de ubicacion de chromium
+const chromiumPath = '${chromiumPath}'
 
 // Variables de estado
 let isBotOperational = false;
@@ -2874,7 +2883,9 @@ appExpress.get('/health', (req, res) => {
 const client = new Client({
     authStrategy: new LocalAuth({ clientId: BOT_ID }),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    executablePath: chromiumPath,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        timeout: 6000000 // Aumentar timeout a 10 minutos
     }
 });
 
@@ -4047,7 +4058,7 @@ async function handlePaymentStep(flow, session, message) {
         await client.initialize();
         
         // Iniciar servidor Express
-        const server = appExpress.listen(PORT, () => {
+        server = appExpress.listen(PORT, () => {
             console.log(\`[EXPRESS] API local del bot escuchando en puerto \${PORT}\`);
         });
         
