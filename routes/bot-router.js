@@ -3,7 +3,8 @@
 
 const express = require('express');
 const path = require('path');
-const db = require('./db/mysql');
+// Usamos la ruta correcta al módulo de base de datos
+const db = require('../db/mysql');
 
 // Crear un router de Express
 const botRouter = express.Router();
